@@ -1478,6 +1478,16 @@ selectedAvatarUrl = createTechAvatarUrl(pinkAvatarSeeds[0], 0);
       });
 
       const usersData = await usersRes.json();
+      console.log('[FRONTEND /api/users]', {
+        status: usersRes.status,
+        ok: usersRes.ok,
+        response: usersData
+      });
+
+      if (!usersRes.ok) {
+        throw new Error(usersData.error || 'Failed to fetch users.');
+      }
+
       allUsers = usersData.users || [];
       renderOnlineUsers();
 

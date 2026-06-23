@@ -361,12 +361,13 @@ loadSessionControl();
 // MONGODB SETUP
 // ================================
 const mongoUri = process.env.MONGODB_URI;
+const hasMongoUri = Boolean(mongoUri);
 
 let User;
 let Message;
 let Group;
 
-if (mongoUri) {
+if (hasMongoUri) {
   console.log('[SYSTEM] Attempting to connect to MongoDB Atlas...');
 
   mongoConnectPromise = mongoose
@@ -428,6 +429,20 @@ if (mongoUri) {
   console.warn(
     '[SYSTEM] MONGODB_URI is not defined. Falling back to IN-MEMORY DATABASE.'
   );
+}
+
+async function useMongoUserStore(context = 'request') {
+  if (!hasMongoUri) return false;
+
+  await mongoConnectPromise;
+
+  if (!isMongoConnected) {
+    throw new Error(
+      `[DATABASE] MongoDB is required for ${context} because MONGODB_URI is configured.`
+    );
+  }
+
+  return true;
 }
 
 // ================================
@@ -605,7 +620,7 @@ app.post('/api/auth/signup', async (req, res) => {
 
     let existingUser;
 
-    if (isMongoConnected) {
+    if (await useMongoUserStore('signup')) {
       existingUser = await User.findOne({
         username: username.toLowerCase()
       });
@@ -630,7 +645,7 @@ app.post('/api/auth/signup', async (req, res) => {
 
     let user;
 
-    if (isMongoConnected) {
+    if (await useMongoUserStore('signup')) {
       user = new User({
         username,
         password: hashedPassword,
@@ -680,7 +695,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     let user;
 
-    if (isMongoConnected) {
+    if (await useMongoUserStore('login')) {
       user = await User.findOne({
         username: username.toLowerCase()
       });
@@ -704,7 +719,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     user.lastSeen = new Date();
 
-    if (isMongoConnected) {
+    if (await useMongoUserStore('login')) {
       await user.save();
     }
 
@@ -734,7 +749,7 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
   try {
     let user;
 
-    if (isMongoConnected) {
+    if (await useMongoUserStore('auth/me')) {
       user = await User.findById(req.user.id);
     } else {
       user = localDbMock.users.find(u => u._id === req.user.id);
@@ -772,7 +787,7 @@ app.post('/api/auth/logout', async (req, res) => {
     if (token) {
       const decoded = jwt.verify(token, JWT_SECRET);
 
-      if (isMongoConnected) {
+      if (await useMongoUserStore('logout')) {
         await User.findByIdAndUpdate(decoded.id, {
           lastSeen: new Date()
         });
@@ -835,7 +850,7 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
     let oldUsername = req.user.username;
     let usernameChanged = false;
 
-    if (isMongoConnected) {
+    if (await useMongoUserStore('profile update')) {
       user = await User.findById(req.user.id);
 
       if (!user) {
@@ -1006,18 +1021,33 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
 // ================================
 app.get('/api/users', authenticateToken, async (req, res) => {
   try {
+    console.log(
+      `[GET /api/users] Called by ${req.user.username || req.user.id}. Source: ${
+        hasMongoUri ? 'MongoDB' : 'local-data.json'
+      }`
+    );
+
     let usersList = [];
 
-    if (isMongoConnected) {
+    if (await useMongoUserStore('/api/users')) {
       const dbUsers = await User.find(
-        {},
+        {
+          username: { $ne: String(req.user.username || '').toLowerCase() }
+        },
         'username avatar bio lastSeen createdAt'
-      );
+      ).sort({ username: 1 });
 
       usersList = dbUsers.map(userResponse);
     } else {
-      usersList = await localDbMock.getAllUsers();
+      usersList = (await localDbMock.getAllUsers())
+        .filter(user =>
+          String(user.id) !== String(req.user.id) &&
+          user.username.toLowerCase() !== String(req.user.username || '').toLowerCase()
+        )
+        .sort((a, b) => a.username.localeCompare(b.username));
     }
+
+    console.log(`[GET /api/users] Found ${usersList.length} users.`);
 
     res.status(200).json({
       success: true,
