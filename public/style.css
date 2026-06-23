@@ -365,7 +365,7 @@ body {
 }
 
 #auth-form input:focus {
-  border-color: rgba(9, 85, 100, 0.78);
+  border-color: rgba(51, 209, 241, 0.78);
   box-shadow: 0 0 0 4px rgba(51, 209, 241, 0.14);
 }
 
@@ -6408,44 +6408,4 @@ body[data-chat-bg="tulip"] .msg-system {
     background-size: min(108vw, 420px) auto, min(92vw, 360px) auto, cover !important;
     background-position: left -74px bottom -10px, center 22px, center !important;
   }
-}
-
-/* Final message-name contrast and pink tulip artwork */
-:root {
-  --tulip-bouquet-bg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 430 760'%3E%3Cg opacity='.96'%3E%3Cpath d='M42 744C116 596 128 424 150 264' fill='none' stroke='%2386b957' stroke-width='8' stroke-linecap='round'/%3E%3Cpath d='M72 710C156 604 190 452 238 336' fill='none' stroke='%2399c961' stroke-width='7' stroke-linecap='round'/%3E%3Cpath d='M18 700C112 620 178 524 328 394' fill='none' stroke='%238bbb5a' stroke-width='7' stroke-linecap='round'/%3E%3Cpath d='M82 632C146 578 192 606 212 650C158 668 112 660 82 632Z' fill='%23bed66e'/%3E%3Cpath d='M128 536C198 498 236 532 248 574C194 584 154 570 128 536Z' fill='%23c8db78'/%3E%3Cpath d='M44 710C96 648 136 660 158 706C112 734 72 736 44 710Z' fill='%23bfd56f'/%3E%3Cg transform='translate(150 250) rotate(-10)'%3E%3Cellipse cx='0' cy='0' rx='35' ry='58' fill='%23e64aa3'/%3E%3Cellipse cx='-22' cy='4' rx='27' ry='50' fill='%23ff78c2'/%3E%3Cellipse cx='22' cy='5' rx='26' ry='50' fill='%23c81f83'/%3E%3Cellipse cx='2' cy='-12' rx='21' ry='42' fill='%23ff9ad2'/%3E%3C/g%3E%3Cg transform='translate(238 330) rotate(8)'%3E%3Cellipse cx='0' cy='0' rx='32' ry='54' fill='%23e24a9e'/%3E%3Cellipse cx='-20' cy='5' rx='25' ry='47' fill='%23ff78c2'/%3E%3Cellipse cx='21' cy='5' rx='24' ry='47' fill='%23c71e82'/%3E%3Cellipse cx='0' cy='-11' rx='19' ry='39' fill='%23ffa3d8'/%3E%3C/g%3E%3Cg transform='translate(328 390) rotate(18)'%3E%3Cellipse cx='0' cy='0' rx='34' ry='56' fill='%23e64aa3'/%3E%3Cellipse cx='-21' cy='3' rx='26' ry='49' fill='%23ff78c2'/%3E%3Cellipse cx='20' cy='5' rx='25' ry='48' fill='%23c81f83'/%3E%3Cellipse cx='0' cy='-12' rx='20' ry='40' fill='%23ffa3d8'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-}
-
-.msg-bubble strong {
-  width: max-content;
-  max-width: 100%;
-  margin: 0 0 6px !important;
-  padding: 2px 6px;
-  display: block;
-  overflow: hidden;
-  border-radius: 6px;
-  font-size: 12px !important;
-  line-height: 1.15;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.msg-wrapper.me .msg-bubble strong {
-  color: #063044 !important;
-  background: rgba(255, 255, 255, 0.58);
-  text-shadow: none !important;
-}
-
-.msg-wrapper.other .msg-bubble strong {
-  color: var(--theme-accent, #69e9ff) !important;
-  background: rgba(49, 200, 235, 0.1);
-}
-
-body[data-chat-bg="tulip"] .msg-wrapper.me .msg-bubble strong {
-  color: #5d143a !important;
-  background: rgba(255, 255, 255, 0.74);
-}
-
-body[data-chat-bg="tulip"] .msg-wrapper.other .msg-bubble strong {
-  color: #ff7abc !important;
-  background: rgba(255, 122, 188, 0.12);
 }
