@@ -1,0 +1,3181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Infinity Chat - Secure Real-Time Messaging</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body data-theme="tech" data-chat-bg="techy">
+  <div id="auth-view">
+    <div class="auth-card">
+      <section class="auth-visual-panel" aria-hidden="true">
+        <div class="auth-brand-lockup">
+          <span class="auth-brand-icon"><span class="infinity-logo"></span></span>
+          <span>
+            <strong>Infinity Chat</strong>
+            <small>Secure realtime channel</small>
+          </span>
+        </div>
+
+        <div class="auth-console-frame">
+          <div class="auth-orbit">
+            <span class="orbit-dot dot-one"></span>
+            <span class="orbit-dot dot-two"></span>
+            <span class="orbit-dot dot-three"></span>
+            <div class="auth-bot">
+              <span class="bot-eye eye-left"></span>
+              <span class="bot-eye eye-right"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="auth-panel">
+        <span class="auth-kicker">Access Console</span>
+        <h1>Access Portal</h1>
+        <p id="auth-subtitle">Sign in to open your chat workspace</p>
+
+        <div class="auth-tabs">
+          <button id="tab-login" class="active" onclick="switchTab('login')">Login</button>
+          <button id="tab-register" onclick="switchTab('register')">Register</button>
+        </div>
+
+        <div id="auth-error" class="auth-error"></div>
+
+        <form id="auth-form">
+          <input type="text" id="auth-username" placeholder="Username" required />
+          <div class="password-input-wrapper">
+            <input type="password" id="auth-password" placeholder="Password" required />
+            <button type="button" class="toggle-password-btn is-hidden" onclick="togglePasswordVisibility()" title="Toggle password visibility">
+              <svg id="eye-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                <!-- Open eye (visible when password is hidden) -->
+                <path d="M12 5C7 5 2.73 8.11 1 12.5C2.73 16.89 7 20 12 20c5 0 9.27-3.11 11-7.5C21.27 8.11 17 5 12 5zm0 10c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0-8c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z"></path>
+              </svg>
+              <svg id="eye-slash-icon" style="display:none" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                <!-- Closed eye with slash (visible when password is shown) -->
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-4.48-11-11a9.96 9.96 0 0 1 5.064-8.595M9.13 9.13a3 3 0 0 0 4.24 4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+
+          <div id="avatar-wrapper" class="avatar-wrapper">
+            <p>Choose Avatar</p>
+            <div class="avatar-grid" id="avatar-grid"></div>
+          </div>
+
+          <button type="submit" class="auth-btn" id="auth-submit-btn">Sign In</button>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <div id="chat-view" style="display:none;">
+    <div class="chat-app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="brand">
+            <span class="brand-icon"><span class="infinity-logo"></span></span>
+            <span class="brand-copy">
+              <span class="brand-name">Infinity Chat</span>
+              <span class="brand-subtitle">Secure chat</span>
+            </span>
+          </div>
+          <span class="live-pill"><span id="ws-status-dot" class="pulse-dot"></span>Live</span>
+        </div>
+
+        <div class="theme-menu" aria-label="Theme selector">
+          <div class="theme-menu-label">Theme</div>
+          <div class="theme-options">
+            <button type="button" class="theme-option" data-theme-option="tech" onclick="setTheme('tech')">
+              <span class="theme-swatch theme-swatch-tech"></span>
+              Tech
+            </button>
+            <button type="button" class="theme-option" data-theme-option="violet" onclick="setTheme('violet')">
+              <span class="theme-swatch theme-swatch-violet"></span>
+              Violet
+            </button>
+            <button type="button" class="theme-option" data-theme-option="ember" onclick="setTheme('ember')">
+              <span class="theme-swatch theme-swatch-ember"></span>
+              Ember
+            </button>
+          </div>
+        </div>
+
+        <div class="sidebar-section-title profile-dock-title">MY PROFILE</div>
+
+        <div class="profile-card">
+          <img id="current-user-avatar" src="" alt="Avatar">
+
+          <div class="profile-info">
+            <div id="current-user-name" class="profile-handle"></div>
+            <div id="profile-bio-preview" class="profile-role">
+              Infinity Chat User
+            </div>
+          </div>
+          <button class="view-profile-button" onclick="openProfileModal(currentUser,true)">
+            View Profile
+          </button>
+        </div>
+
+        <div class="sidebar-section-title rooms-title">ROOMS & GROUPS</div>
+
+        <button id="lounge-room-btn" class="room-btn active" onclick="switchRoom('lounge')">Global Chat</button>
+        <button class="room-btn create-group-btn" onclick="openCreateGroupModal()">Create Group</button>
+
+        <div id="groups-list"></div>
+
+        <div id="direct-messages-title" class="sidebar-section-title">Direct Messages</div>
+
+        <input 
+          type="text" 
+          id="user-search" 
+          class="search-box" 
+          placeholder="Search users..."
+        />
+
+        <div id="online-users-list"></div>
+
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </aside>
+
+      <div id="mobile-sidebar-backdrop" class="mobile-sidebar-backdrop" aria-hidden="true" onclick="closeMobileSidebar()"></div>
+
+      <main class="chat-main">
+        <header class="chat-header">
+          <div>
+            <h2 id="room-title">Global</h2>
+            <p id="room-subtitle"></p>
+            <small id="typing-indicator"></small>
+          </div>
+          <div class="chat-header-actions">
+            <button id="mobile-sidebar-toggle" class="header-icon-btn mobile-sidebar-toggle" type="button" onclick="toggleMobileSidebar()" aria-label="Open chat menu" aria-expanded="false">Menu</button>
+            <button id="view-members-btn" class="header-icon-btn" type="button" onclick="openRoomInfoModal()" title="Room info">Info</button>
+          </div>
+        </header>
+
+        <section id="chat-box" class="chat-box"></section>
+
+        <form id="message-form" class="message-form">
+          <button type="button" class="file-trigger-btn" onclick="openMessageFilePicker()" title="Add file, photo, or video">+</button>
+          <input type="file" id="message-file-input" accept="image/*,video/*,.pdf,.doc,.docx,.txt,.zip" hidden>
+          <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off" />
+          <div id="reply-preview" class="reply-preview" style="display:none;">
+            <span>
+              <strong id="reply-preview-sender">Replying</strong>
+              <small id="reply-preview-text"></small>
+            </span>
+            <button type="button" class="reply-cancel-btn" onclick="clearPendingReply()" title="Cancel reply">&times;</button>
+          </div>
+          <button type="button" class="emoji-trigger-btn" onclick="toggleMessageEmojiPicker()" title="Add emoji">☺</button>
+          <div id="message-emoji-picker" class="emoji-picker" style="display:none;"></div>
+          <button type="submit">Send</button>
+        </form>
+      </main>
+    </div>
+  </div>
+
+  <div id="group-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeCreateGroupModal()">×</button>
+      <h2>Create Group Chat</h2>
+      <input type="text" id="group-name" placeholder="Group name" />
+      <div id="group-members-select"></div>
+      <button onclick="createGroup()">Create Group</button>
+    </div>
+  </div>
+
+  <div id="manage-group-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content group-members-modal">
+      <button class="modal-close" onclick="closeManageGroupModal()">×</button>
+      <h2 id="manage-group-title">Group Members</h2>
+      <div id="manage-group-members"></div>
+      <div id="add-group-member-panel"></div>
+    </div>
+  </div>
+
+  <div id="room-info-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content room-info-modal">
+      <button class="modal-close" onclick="closeRoomInfoModal()">&times;</button>
+      <div class="room-info-hero">
+        <div id="room-info-avatar" class="room-info-avatar"></div>
+        <div class="room-info-heading">
+          <span id="room-info-kicker" class="room-info-kicker">Room Details</span>
+          <h2 id="room-info-title">Room Info</h2>
+          <p id="room-info-subtitle">Realtime chat workspace</p>
+        </div>
+      </div>
+      <div id="room-info-profile-edit" class="room-info-profile-edit" style="display:none;">
+        <div class="room-info-name-row">
+          <label for="group-room-name-input">Group name</label>
+          <div class="room-info-name-control">
+            <input id="group-room-name-input" type="text" maxlength="30" placeholder="Group name">
+            <button id="room-info-save-btn" type="button" class="room-info-save-btn">Save</button>
+          </div>
+        </div>
+
+        <div class="room-info-upload-row">
+          <button id="room-info-upload-btn" type="button" class="upload-btn room-info-upload-btn" onclick="document.getElementById('group-profile-image-input').click()">
+            Upload New Profile Picture
+          </button>
+          <small id="room-info-save-status" class="room-info-save-status" aria-live="polite"></small>
+        </div>
+      </div>
+      <div id="room-info-stats" class="room-info-stats"></div>
+      <div id="room-info-preview" class="room-info-preview"></div>
+      <div class="chat-background-picker" aria-label="Chat background theme">
+        <div class="chat-background-title">
+          <strong>Chat Background</strong>
+          <small>Applies everywhere you sign in</small>
+        </div>
+        <div class="chat-background-options">
+          <button type="button" class="chat-background-option" data-chat-bg-option="techy" onclick="setChatBackground('techy')">
+            <span class="chat-background-preview techy"></span>
+            <span>Techy</span>
+          </button>
+          <button type="button" class="chat-background-option" data-chat-bg-option="tulip" onclick="setChatBackground('tulip')">
+            <span class="chat-background-preview tulip"></span>
+            <span>Tulip</span>
+          </button>
+        </div>
+      </div>
+      <div class="room-info-actions">
+        <button id="room-info-members-btn" class="room-info-action-card" type="button" onclick="openGroupMembersFromInfo()">
+          <span class="room-info-action-icon">M</span>
+          <span>
+            <strong>Members</strong>
+            <small>View profiles and manage people</small>
+          </span>
+        </button>
+        <button class="room-info-action-card" type="button" onclick="openMediaModal()">
+          <span class="room-info-action-icon">F</span>
+          <span>
+            <strong>Photos / Videos / Files</strong>
+            <small>Browse shared uploads in this room</small>
+          </span>
+        </button>
+        <button id="room-info-delete-group-btn" class="room-info-action-card danger" type="button" onclick="deleteGroupChat()" style="display:none;">
+          <span class="room-info-action-icon danger">D</span>
+          <span>
+            <strong>Delete Group</strong>
+            <small>Remove this group chat for every member</small>
+          </span>
+        </button>
+      </div>
+      <input id="group-profile-image-input" type="file" accept="image/*" hidden>
+    </div>
+  </div>
+
+  <div id="media-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content media-modal">
+      <button class="modal-close" onclick="closeMediaModal()">&times;</button>
+      <h2 id="media-modal-title">Shared Uploads</h2>
+      <div class="media-filter-tabs" role="tablist" aria-label="Shared upload filters">
+        <button type="button" class="media-filter-tab active" data-media-filter="image" onclick="setMediaFilter('image')">
+          <strong id="media-photo-count">0</strong>
+          <span>Photos</span>
+        </button>
+        <button type="button" class="media-filter-tab" data-media-filter="file" onclick="setMediaFilter('file')">
+          <strong id="media-file-count">0</strong>
+          <span>Files</span>
+        </button>
+        <button type="button" class="media-filter-tab" data-media-filter="video" onclick="setMediaFilter('video')">
+          <strong id="media-video-count">0</strong>
+          <span>Videos</span>
+        </button>
+      </div>
+      <div id="media-list"></div>
+    </div>
+  </div>
+
+  <div id="confirm-modal" class="modal-overlay confirm-overlay" style="display:none;">
+    <div class="modal-content confirm-modal">
+      <h2 id="confirm-title">Confirm Action</h2>
+      <p id="confirm-message"></p>
+      <div class="confirm-actions">
+        <button type="button" class="confirm-cancel-btn" onclick="resolveConfirm(false)">Cancel</button>
+        <button type="button" class="confirm-ok-btn" onclick="resolveConfirm(true)">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="delete-message-modal" class="modal-overlay confirm-overlay" style="display:none;">
+    <div class="modal-content delete-message-modal">
+      <button class="modal-close" onclick="closeDeleteMessageModal()">&times;</button>
+      <h2>Who do you want to unsend this message for?</h2>
+      <label class="delete-choice-row">
+        <input type="radio" name="delete-message-choice" value="everyone" checked>
+        <span>
+          <strong>Unsend for everyone</strong>
+          <small>This message will be removed for everyone in the chat.</small>
+        </span>
+      </label>
+      <label class="delete-choice-row">
+        <input type="radio" name="delete-message-choice" value="me">
+        <span>
+          <strong>Unsend for you</strong>
+          <small>This removes the message only from your view. Others can still see it.</small>
+        </span>
+      </label>
+      <div class="confirm-actions">
+        <button type="button" class="confirm-cancel-btn" onclick="closeDeleteMessageModal()">Cancel</button>
+        <button type="button" class="confirm-ok-btn" onclick="confirmDeleteMessage()">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="image-viewer-modal" class="modal-overlay image-viewer-overlay" style="display:none;">
+    <div class="image-viewer-modal">
+      <button class="modal-close image-viewer-close" onclick="closeImageViewer()">&times;</button>
+      <img id="image-viewer-img" src="" alt="">
+      <a id="image-viewer-download" href="" download>Download</a>
+    </div>
+  </div>
+
+  <div id="profile-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content profile-modal">
+      <button class="modal-close" onclick="closeProfileModal()">×</button>
+
+      <div class="profile-hero">
+        <img id="profile-preview" class="profile-preview" src="" alt="Profile Picture">
+        <div class="profile-identity">
+          <span id="profile-mode-label" class="profile-mode-label">Profile</span>
+          <h2 id="profile-name"></h2>
+          <p id="profile-status"></p>
+        </div>
+      </div>
+
+      <div class="profile-insights">
+        <div class="profile-insight-card">
+          <span>Status</span>
+          <strong id="profile-online-summary">Offline</strong>
+        </div>
+        <div class="profile-insight-card">
+          <span>Joined</span>
+          <strong id="profile-joined-summary">Today</strong>
+        </div>
+      </div>
+
+      <div id="profile-username-field" class="profile-username-field">
+        <label for="profile-username-input">Username</label>
+        <input id="profile-username-input" type="text" maxlength="15" autocomplete="off">
+        <small>Use 3-15 characters. This updates your name across chats.</small>
+      </div>
+
+      <label for="profile-bio" class="profile-bio-label">Write Bio</label>
+      <div class="bio-field">
+        <textarea id="profile-bio" placeholder="Write your bio/about me..."></textarea>
+        <div id="profile-bio-emoji-tools" class="bio-emoji-tools" style="display:none;">
+          <button type="button" class="bio-emoji-trigger-btn" onclick="toggleBioEmojiPicker()" title="Add emoji">&#9786;</button>
+          <div id="profile-bio-emoji-picker" class="emoji-picker bio-emoji-picker" style="display:none;"></div>
+        </div>
+      </div>
+
+      <div id="profile-edit-area">
+
+  <div class="avatar-selector-container">
+    <h4 class="avatar-title">Choose Avatar</h4>
+
+    <div class="avatar-strip">
+      <span class="avatar-strip-arrow" aria-hidden="true">&lsaquo;</span>
+      <div id="profile-avatar-grid"></div>
+      <span class="avatar-strip-arrow" aria-hidden="true">&rsaquo;</span>
+    </div>
+  </div>
+
+  <label class="upload-btn">
+    Upload New Profile Picture
+    <input
+      type="file"
+      id="profile-upload"
+      accept="image/*"
+      hidden
+    >
+  </label>
+
+<div id="crop-editor" style="display:none;">
+  <div id="crop-frame">
+    <img id="crop-image" src="">
+  </div>
+
+  <div class="crop-controls">
+    <label>Zoom</label>
+
+    <input
+      type="range"
+      id="crop-zoom"
+      min="1"
+      max="3"
+      step="0.1"
+      value="1"
+    >
+
+    <button type="button" onclick="applyCrop()">Apply</button>
+  </div>
+</div>
+
+  <button onclick="saveProfile()">
+    Save Profile
+  </button>
+
+</div>
+      </div>
+    </div>
+  </div>
+
+    <script>
+    let socket;
+    let currentMode = 'login';
+    let currentUser = null;
+    let activeRoomId = 'lounge';
+    let allUsers = [];
+    let allGroups = [];
+    let onlineUsernames = new Set();
+    let activeUsersCount = 0;
+    let unreadCounts = {};
+    let typingTimer;
+    let activeRoomMessages = [];
+    let activeMediaFilter = 'image';
+    let pendingReply = null;
+    let pendingConfirmResolve = null;
+    let pendingDeleteMessageId = null;
+    let pendingDeleteCanEveryone = false;
+    const messageElements = new Map();
+    const availableThemes = ['tech', 'violet', 'ember'];
+    const availableChatBackgrounds = ['techy', 'tulip'];
+
+    function setTheme(themeName, persist = true) {
+      const nextTheme = availableThemes.includes(themeName) ? themeName : 'tech';
+
+      document.body.dataset.theme = nextTheme;
+
+      document.querySelectorAll('[data-theme-option]').forEach(button => {
+        button.classList.toggle('active', button.dataset.themeOption === nextTheme);
+      });
+
+      if (persist) {
+        localStorage.setItem('chat_theme', nextTheme);
+      }
+    }
+
+    function initTheme() {
+      setTheme(localStorage.getItem('chat_theme') || 'tech', false);
+    }
+
+    function setChatBackground(backgroundName, persist = true) {
+      const nextBackground = availableChatBackgrounds.includes(backgroundName)
+        ? backgroundName
+        : 'techy';
+
+      document.body.dataset.chatBg = nextBackground;
+
+      document.querySelectorAll('[data-chat-bg-option]').forEach(button => {
+        const isActive = button.dataset.chatBgOption === nextBackground;
+        button.classList.toggle('active', isActive);
+        button.setAttribute('aria-pressed', String(isActive));
+      });
+
+      if (persist) {
+        localStorage.setItem('chat_background', nextBackground);
+      }
+    }
+
+    function initChatBackground() {
+      setChatBackground(localStorage.getItem('chat_background') || 'techy', false);
+    }
+
+    initTheme();
+    initChatBackground();
+
+    const chatEmojis = [
+      { label: 'Laughing', value: '😂' },
+      { label: 'Sad', value: '😢' },
+      { label: 'Crying', value: '😭' },
+      { label: 'Angry', value: '😡' },
+      { label: 'Inlove', value: '😍' },
+      { label: 'Disgust', value: '🤢' },
+      { label: 'Heart', value: '❤️' }
+    ];
+
+   const pinkAvatarSeeds = [
+  'PinkBot', 'Cutie', 'NeonGirl', 'Kitty', 'Princess',
+  'Angel', 'Flower', 'Sweet', 'Bunny', 'Love',
+  'Cherry', 'Strawberry', 'Unicorn', 'Moon', 'Heart'
+];
+
+let selectedAvatarUrl =
+   `https://api.dicebear.com/9.x/bottts/svg?seed=${encodeURIComponent(pinkAvatarSeeds[0])}&backgroundColor=ffd5ec`;
+let selectedProfileAvatar = null;
+
+chatEmojis.splice(
+  0,
+  chatEmojis.length,
+  { label: 'Laughing', value: '\uD83D\uDE02' },
+  { label: 'Surprised', value: '\uD83D\uDE2E' },
+  { label: 'Crying', value: '\uD83D\uDE2D' },
+  { label: 'Angry', value: '\uD83D\uDE21' },
+  { label: 'Inlove', value: '\uD83D\uDE0D' },
+  { label: 'Disgust', value: '\uD83E\uDD22' },
+  { label: 'Salute', value: '\uD83E\uDEE1' },
+  { label: 'Thumbs Up', value: '\uD83D\uDC4D' },
+  { label: 'Blush', value: '\uD83D\uDE0A' },
+  { label: 'Celebrate', value: '\uD83E\uDD73' },
+  { label: 'Heart', value: '\u2764\uFE0F' }
+);
+
+const techAvatarSeeds = [
+  'CircuitMint', 'PixelRose', 'NovaCore', 'BytePilot', 'SignalBot',
+  'HoneyUnit', 'CyberCub', 'OrbitBlue', 'TinyRelay', 'NeonMask',
+  'GlassNode', 'DataBloom', 'CloudMint', 'RocketBox', 'QuantumPal'
+];
+
+const techAvatarPalettes = [
+  ['#5d6680', '#b9f2f2', '#45dfe5', '#3f3d67', '#2d2f55'],
+  ['#1f7de8', '#ffffff', '#49d7ff', '#12255b', '#143b82'],
+  ['#10566d', '#f6fbf8', '#67e7ec', '#15394d', '#58cad8'],
+  ['#a43a1f', '#ffb029', '#ff7544', '#68233a', '#6d1e18'],
+  ['#0a3a90', '#ffffff', '#2d8dff', '#133b8a', '#1f45a7'],
+  ['#8bc44a', '#f7fbff', '#84d9ff', '#133b8a', '#2e579c']
+];
+
+function createTechAvatarUrl(seed, index = 0) {
+  const variant = index % 6;
+  const [body, cap, accent, face, stroke] = techAvatarPalettes[variant];
+  const faceFill = variant === 0 || variant === 2 || variant === 3 || variant === 4 ? face : '#ffffff';
+  const eye = variant === 0 || variant === 2 || variant === 3 || variant === 4 ? accent : stroke;
+  const smile = variant === 0 || variant === 2 || variant === 3 || variant === 4
+    ? '#b9fbff'
+    : stroke;
+  const antennaPair = `
+    <path d="M42 31 38 12M86 31l4-19" fill="none" stroke="${stroke}" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="37" cy="10" r="5" fill="${accent}" stroke="${stroke}" stroke-width="3"/>
+    <circle cx="91" cy="10" r="5" fill="${accent}" stroke="${stroke}" stroke-width="3"/>
+  `;
+  const singleAntenna = `
+    <path d="M64 31V13" fill="none" stroke="${stroke}" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="64" cy="10" r="5" fill="${accent}" stroke="${stroke}" stroke-width="3"/>
+  `;
+  const sidePods = `
+    <rect x="16" y="56" width="14" height="28" rx="7" fill="${cap}" stroke="${stroke}" stroke-width="4"/>
+    <rect x="98" y="56" width="14" height="28" rx="7" fill="${cap}" stroke="${stroke}" stroke-width="4"/>
+  `;
+  const headset = `
+    <path d="M27 47V25M101 47V25" fill="none" stroke="${stroke}" stroke-width="5" stroke-linecap="round"/>
+    <rect x="18" y="54" width="13" height="31" rx="7" fill="${cap}" stroke="${stroke}" stroke-width="4"/>
+    <rect x="97" y="54" width="13" height="31" rx="7" fill="${cap}" stroke="${stroke}" stroke-width="4"/>
+  `;
+  const faceParts = `
+    <circle cx="52" cy="71" r="5" fill="${eye}"/>
+    <circle cx="76" cy="71" r="5" fill="${eye}"/>
+    <path d="M55 82c5 6 13 6 18 0" fill="none" stroke="${smile}" stroke-width="4" stroke-linecap="round"/>
+  `;
+
+  const variants = [
+    `
+      ${headset}
+      <rect x="29" y="41" width="70" height="55" rx="23" fill="${body}" stroke="${stroke}" stroke-width="5"/>
+      <rect x="39" y="52" width="50" height="34" rx="16" fill="${faceFill}" stroke="${stroke}" stroke-width="3"/>
+      ${faceParts}
+    `,
+    `
+      <path d="M38 38V22M90 38V22" stroke="${stroke}" stroke-width="5" stroke-linecap="round"/>
+      ${sidePods}
+      <rect x="28" y="36" width="72" height="62" rx="24" fill="${body}" stroke="${stroke}" stroke-width="5"/>
+      <path d="M48 38h32v14c0 7-5 11-12 11h-8c-7 0-12-4-12-11V38Z" fill="${cap}" stroke="${stroke}" stroke-width="4"/>
+      ${faceParts}
+    `,
+    `
+      ${antennaPair}
+      ${sidePods}
+      <rect x="28" y="38" width="72" height="58" rx="16" fill="${body}" stroke="${stroke}" stroke-width="5"/>
+      <path d="M49 38h30l-4 13H53l-4-13Z" fill="${cap}" stroke="${stroke}" stroke-width="4"/>
+      <rect x="41" y="55" width="46" height="28" rx="10" fill="${faceFill}" stroke="${stroke}" stroke-width="3"/>
+      ${faceParts}
+    `,
+    `
+      ${antennaPair}
+      <circle cx="64" cy="68" r="38" fill="${body}" stroke="${stroke}" stroke-width="5"/>
+      <path d="M41 44c8-14 38-14 46 0" fill="${cap}" stroke="${stroke}" stroke-width="5" stroke-linecap="round"/>
+      <rect x="36" y="56" width="56" height="30" rx="15" fill="${faceFill}" stroke="${stroke}" stroke-width="4"/>
+      ${faceParts}
+      <circle cx="24" cy="68" r="9" fill="${body}" stroke="${stroke}" stroke-width="4"/>
+      <circle cx="104" cy="68" r="9" fill="${body}" stroke="${stroke}" stroke-width="4"/>
+    `,
+    `
+      ${antennaPair}
+      <ellipse cx="64" cy="66" rx="47" ry="34" fill="${body}" stroke="${stroke}" stroke-width="5"/>
+      <path d="M45 37c12-8 26-8 38 0" fill="${cap}" stroke="${stroke}" stroke-width="5" stroke-linecap="round"/>
+      <rect x="38" y="55" width="52" height="28" rx="14" fill="${faceFill}" stroke="${stroke}" stroke-width="4"/>
+      ${faceParts}
+      <circle cx="64" cy="37" r="6" fill="${stroke}"/>
+    `,
+    `
+      ${singleAntenna}
+      ${sidePods}
+      <circle cx="64" cy="67" r="39" fill="${body}" stroke="${stroke}" stroke-width="5"/>
+      <path d="M40 45c10-12 38-12 48 0v13H40V45Z" fill="${cap}" stroke="${stroke}" stroke-width="4"/>
+      <rect x="39" y="58" width="50" height="34" rx="16" fill="${faceFill}" stroke="${stroke}" stroke-width="4"/>
+      ${faceParts}
+    `
+  ];
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+      <rect width="128" height="128" rx="24" fill="#ffffff"/>
+      ${variants[variant]}
+    </svg>
+  `;
+
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+pinkAvatarSeeds.splice(0, pinkAvatarSeeds.length, ...techAvatarSeeds);
+selectedAvatarUrl = createTechAvatarUrl(pinkAvatarSeeds[0], 0);
+
+    const authForm = document.getElementById('auth-form');
+    const authErrorBox = document.getElementById('auth-error');
+    const authSubtitle = document.getElementById('auth-subtitle');
+    const authSubmitBtn = document.getElementById('auth-submit-btn');
+    const avatarWrapper = document.getElementById('avatar-wrapper');
+    const chatBox = document.getElementById('chat-box');
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
+    const messageEmojiPicker = document.getElementById('message-emoji-picker');
+    const messageFileInput = document.getElementById('message-file-input');
+    const bioEmojiPicker = document.getElementById('profile-bio-emoji-picker');
+    const profileBioInput = document.getElementById('profile-bio');
+    const viewMembersBtn = document.getElementById('view-members-btn');
+    const mobileSidebarToggle = document.getElementById('mobile-sidebar-toggle');
+    const mobileSidebarBackdrop = document.getElementById('mobile-sidebar-backdrop');
+    const roomInfoProfileEdit = document.getElementById('room-info-profile-edit');
+    const roomInfoAvatar = document.getElementById('room-info-avatar');
+    const groupRoomNameInput = document.getElementById('group-room-name-input');
+    const groupProfileImageInput = document.getElementById('group-profile-image-input');
+    const roomInfoUploadBtn = document.getElementById('room-info-upload-btn');
+    const roomInfoSaveBtn = document.getElementById('room-info-save-btn');
+    const roomInfoSaveStatus = document.getElementById('room-info-save-status');
+    let roomInfoStatusTimer;
+
+    avatarWrapper.style.display = 'none';
+    viewMembersBtn.classList.add('is-visible');
+
+    function setRoomInfoProfileStatus(message = '', state = '') {
+      if (!roomInfoSaveStatus) return;
+
+      clearTimeout(roomInfoStatusTimer);
+      roomInfoSaveStatus.textContent = message;
+      roomInfoSaveStatus.dataset.state = state;
+
+      if (state === 'success') {
+        roomInfoStatusTimer = setTimeout(() => {
+          roomInfoSaveStatus.textContent = '';
+          roomInfoSaveStatus.dataset.state = '';
+        }, 2200);
+      }
+    }
+
+    function setRoomInfoSaving(isSaving) {
+      if (roomInfoSaveBtn) {
+        roomInfoSaveBtn.disabled = isSaving;
+        roomInfoSaveBtn.textContent = isSaving ? 'Saving...' : 'Save';
+      }
+
+      if (roomInfoUploadBtn) {
+        roomInfoUploadBtn.disabled = isSaving;
+      }
+    }
+
+    function markGroupNameDirty() {
+      const group = getActiveGroup();
+      if (!group) return;
+
+      const nextName = groupRoomNameInput.value.trim();
+      setRoomInfoProfileStatus(
+        nextName && nextName !== (group.name || '') ? 'Unsaved group name' : '',
+        nextName && nextName !== (group.name || '') ? 'pending' : ''
+      );
+    }
+
+    function createGroupAvatarDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onerror = () => reject(new Error('Could not read image.'));
+
+        reader.onload = event => {
+          const image = new Image();
+          image.onerror = () => reject(new Error('Could not load image.'));
+
+          image.onload = () => {
+            const size = 512;
+            const sourceSize = Math.min(image.naturalWidth, image.naturalHeight);
+            const sourceX = Math.max(0, (image.naturalWidth - sourceSize) / 2);
+            const sourceY = Math.max(0, (image.naturalHeight - sourceSize) / 2);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = size;
+            canvas.height = size;
+
+            ctx.drawImage(
+              image,
+              sourceX,
+              sourceY,
+              sourceSize,
+              sourceSize,
+              0,
+              0,
+              size,
+              size
+            );
+
+            let dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+
+            if (dataUrl.length > 800000) {
+              dataUrl = canvas.toDataURL('image/jpeg', 0.68);
+            }
+
+            resolve(dataUrl);
+          };
+
+          image.src = event.target.result;
+        };
+
+        reader.readAsDataURL(file);
+      });
+    }
+
+    groupProfileImageInput?.addEventListener('change', async () => {
+      const file = groupProfileImageInput.files?.[0];
+
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        alert('Please choose an image file.');
+        groupProfileImageInput.value = '';
+        return;
+      }
+
+      try {
+        setRoomInfoSaving(true);
+        setRoomInfoProfileStatus('Preparing image...', 'saving');
+
+        const dataUrl = await createGroupAvatarDataUrl(file);
+        const group = getActiveGroup();
+
+        if (roomInfoAvatar && group) {
+          roomInfoAvatar.innerHTML = renderSavedGroupAvatar(
+            dataUrl,
+            group.name || 'Group'
+          );
+        }
+
+        await saveGroupProfile({ avatar: dataUrl });
+      } catch (error) {
+        alert('Failed to read the selected image.');
+        setRoomInfoProfileStatus('Failed to read image.', 'error');
+        setRoomInfoSaving(false);
+        groupProfileImageInput.value = '';
+      }
+    });
+
+    groupRoomNameInput?.addEventListener('input', markGroupNameDirty);
+
+    roomInfoSaveBtn?.addEventListener('click', () => {
+      saveGroupProfile({ name: groupRoomNameInput.value.trim() });
+    });
+
+    groupRoomNameInput?.addEventListener('keydown', event => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      saveGroupProfile({ name: groupRoomNameInput.value.trim() });
+    });
+
+    function isMobileChatLayout() {
+      return window.matchMedia('(max-width: 860px)').matches;
+    }
+
+    function setMobileSidebarOpen(isOpen) {
+      document.body.classList.toggle('sidebar-open', isOpen);
+
+      if (mobileSidebarToggle) {
+        mobileSidebarToggle.setAttribute('aria-expanded', String(isOpen));
+      }
+
+      if (mobileSidebarBackdrop) {
+        mobileSidebarBackdrop.setAttribute('aria-hidden', String(!isOpen));
+      }
+    }
+
+    function toggleMobileSidebar(forceOpen = null) {
+      if (!isMobileChatLayout()) return;
+
+      const nextState = typeof forceOpen === 'boolean'
+        ? forceOpen
+        : !document.body.classList.contains('sidebar-open');
+
+      setMobileSidebarOpen(nextState);
+    }
+
+    function closeMobileSidebar() {
+      setMobileSidebarOpen(false);
+    }
+
+    function renderAvatarGrid() {
+      const avatarGrid = document.getElementById('avatar-grid');
+      const profileAvatarGrid = document.getElementById('profile-avatar-grid');
+
+      avatarGrid.innerHTML = '';
+      profileAvatarGrid.innerHTML = '';
+
+      pinkAvatarSeeds.forEach((seed, index) => {
+        const url = createTechAvatarUrl(seed, index);
+        const registerDiv = document.createElement('div');
+        registerDiv.className = `avatar-option ${index === 0 ? 'selected' : ''}`;
+        registerDiv.innerHTML = `<img src="${url}" alt="${seed}">`;
+        registerDiv.onclick = () => {
+          document.querySelectorAll('#avatar-grid .avatar-option')
+            .forEach(item => item.classList.remove('selected'));
+
+          registerDiv.classList.add('selected');
+          selectedAvatarUrl = url;
+        };
+
+        avatarGrid.appendChild(registerDiv);
+
+        const profileDiv = document.createElement('div');
+        profileDiv.className = 'avatar-option';
+        profileDiv.innerHTML = `<img src="${url}" alt="${seed}">`;
+        profileDiv.onclick = () => {
+          document.querySelectorAll('#profile-avatar-grid .avatar-option')
+            .forEach(item => item.classList.remove('selected'));
+
+          profileDiv.classList.add('selected');
+          document.getElementById('profile-preview').src = url;
+          selectedProfileAvatar = url;
+        };
+
+        profileAvatarGrid.appendChild(profileDiv);
+      });
+    }
+
+    renderAvatarGrid();
+    const tabsEl = document.querySelector('.auth-tabs');
+    if (tabsEl) tabsEl.dataset.active = currentMode;
+    const passwordInput = document.getElementById('auth-password');
+    const togglePasswordBtn = document.querySelector('.toggle-password-btn');
+
+    function syncPasswordToggleVisibility() {
+      const hasPassword = passwordInput.value.length > 0;
+
+      togglePasswordBtn.classList.toggle('is-hidden', !hasPassword);
+
+      if (!hasPassword) {
+        passwordInput.type = 'password';
+        document.getElementById('eye-icon').style.display = 'block';
+        document.getElementById('eye-slash-icon').style.display = 'none';
+      }
+    }
+
+    passwordInput.addEventListener('input', syncPasswordToggleVisibility);
+    syncPasswordToggleVisibility();
+
+    function getUserByUsername(username) {
+      return allUsers.find(
+        user => user.username.toLowerCase() === username.toLowerCase()
+      ) || {
+        username,
+        avatar: createTechAvatarUrl(username || 'Infinity User', 0),
+        bio: 'Infinity Chat user'
+      };
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function getDisplayAvatar(user, index = 0) {
+      return user?.avatar || createTechAvatarUrl(user?.username || 'Infinity User', index);
+    }
+
+    function isGeneratedGroupAvatar(avatar) {
+      return String(avatar || '').includes('api.dicebear.com/7.x/initials/svg');
+    }
+
+    function getSavedGroupAvatar(group) {
+      const avatar = typeof group?.avatar === 'string' ? group.avatar.trim() : '';
+      return avatar && !isGeneratedGroupAvatar(avatar) ? avatar : '';
+    }
+
+    function renderSavedGroupAvatar(avatar, name = 'Group') {
+      return `<img class="saved-group-avatar" src="${escapeHtml(avatar)}" alt="${escapeHtml(`${name || 'Group'} avatar`)}">`;
+    }
+
+    function getGroupAvatarMembers(group) {
+      const members = Array.isArray(group?.members) ? group.members.filter(Boolean) : [];
+
+      if (members.length) {
+        return members;
+      }
+
+      return group?.creator ? [group.creator] : [];
+    }
+
+    function renderGroupAvatar(group) {
+      const savedAvatar = getSavedGroupAvatar(group);
+
+      if (savedAvatar) {
+        return `
+          <div class="group-avatar group-avatar-single">
+            ${renderSavedGroupAvatar(savedAvatar, group.name)}
+          </div>
+        `;
+      }
+
+      const members = getGroupAvatarMembers(group).slice(0, 4);
+
+      if (!members.length) {
+        return '<div class="group-avatar group-avatar-empty">IC</div>';
+      }
+
+      const memberImages = members
+        .map((username, index) => {
+          const user = getUserByUsername(username);
+          const safeAvatar = escapeHtml(getDisplayAvatar(user, index));
+          const safeName = escapeHtml(user.username || username);
+
+          return `<img src="${safeAvatar}" alt="${safeName}">`;
+        })
+        .join('');
+
+      return `
+        <div class="group-avatar group-avatar-stack group-count-${Math.min(members.length, 4)}">
+          ${memberImages}
+        </div>
+      `;
+    }
+
+    function getActiveGroup() {
+      if (!activeRoomId.startsWith('group_')) return null;
+
+      const groupId = activeRoomId.replace('group_', '');
+      return allGroups.find(group => String(group._id) === groupId) || null;
+    }
+
+    function renderMessageEmojiPicker() {
+      messageEmojiPicker.innerHTML = '';
+
+      chatEmojis.forEach(emoji => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'emoji-option';
+        button.title = emoji.label;
+        button.textContent = emoji.value;
+        button.onclick = () => {
+          messageInput.value += emoji.value;
+          messageInput.focus();
+          messageEmojiPicker.style.display = 'none';
+        };
+
+        messageEmojiPicker.appendChild(button);
+      });
+    }
+
+    renderMessageEmojiPicker();
+
+    function renderBioEmojiPicker() {
+      bioEmojiPicker.innerHTML = '';
+
+      chatEmojis.forEach(emoji => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'emoji-option';
+        button.title = emoji.label;
+        button.textContent = emoji.value;
+        button.onclick = () => {
+          insertBioEmoji(emoji.value);
+          bioEmojiPicker.style.display = 'none';
+        };
+
+        bioEmojiPicker.appendChild(button);
+      });
+    }
+
+    renderBioEmojiPicker();
+
+    function toggleMessageEmojiPicker() {
+      messageEmojiPicker.style.display =
+        messageEmojiPicker.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    function toggleBioEmojiPicker() {
+      bioEmojiPicker.style.display =
+        bioEmojiPicker.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    function openMessageFilePicker() {
+      messageFileInput.click();
+    }
+
+    function parseAttachmentPayload(content) {
+      if (!content || typeof content !== 'string' || !content.startsWith('__ATTACHMENT__:')) {
+        return null;
+      }
+
+      try {
+        return JSON.parse(content.replace('__ATTACHMENT__:', ''));
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function parseMessagePayload(content) {
+      const rawContent = String(content || '');
+
+      if (rawContent.startsWith('__REPLY__:')) {
+        try {
+          const payload = JSON.parse(rawContent.replace('__REPLY__:', ''));
+          const body = String(payload.body || '');
+
+          return {
+            body,
+            reply: payload.reply || null,
+            attachment: parseAttachmentPayload(body)
+          };
+        } catch (err) {
+          return {
+            body: rawContent,
+            reply: null,
+            attachment: null
+          };
+        }
+      }
+
+      return {
+        body: rawContent,
+        reply: null,
+        attachment: parseAttachmentPayload(rawContent)
+      };
+    }
+
+    function createAttachmentMessage(attachment) {
+      return `__ATTACHMENT__:${JSON.stringify(attachment)}`;
+    }
+
+    function createReplyMessage(body) {
+      if (!pendingReply) return body;
+
+      return `__REPLY__:${JSON.stringify({
+        reply: pendingReply,
+        body
+      })}`;
+    }
+
+    function getMessageDisplaySummary(content) {
+      const parsed = parseMessagePayload(content);
+
+      if (parsed.attachment) {
+        const label = parsed.attachment.kind === 'image'
+          ? 'Photo'
+          : parsed.attachment.kind === 'video'
+            ? 'Video'
+            : 'File';
+
+        return `${label}: ${parsed.attachment.name || 'Attachment'}`;
+      }
+
+      return parsed.body.trim() || 'Message';
+    }
+
+    function clearPendingReply() {
+      pendingReply = null;
+
+      const preview = document.getElementById('reply-preview');
+      if (preview) preview.style.display = 'none';
+    }
+
+    function startReply(payload) {
+      const messageId = String(payload._id || payload.id || '');
+      const sender = payload.username || payload.sender || 'User';
+      const summary = getMessageDisplaySummary(payload.message || payload.content || '');
+
+      pendingReply = {
+        id: messageId,
+        sender,
+        preview: summary.slice(0, 120)
+      };
+
+      document.getElementById('reply-preview-sender').textContent = `Replying to ${sender}`;
+      document.getElementById('reply-preview-text').textContent = pendingReply.preview;
+      document.getElementById('reply-preview').style.display = 'grid';
+      messageInput.focus();
+    }
+
+    function renderReplyQuote(container, reply) {
+      if (!reply) return;
+
+      const quote = document.createElement('button');
+      quote.type = 'button';
+      quote.className = 'msg-reply-quote';
+      quote.title = reply.id ? 'Jump to original message' : 'Reply preview';
+      quote.innerHTML = `
+        <strong></strong>
+        <small></small>
+      `;
+
+      quote.querySelector('strong').textContent = reply.sender || 'User';
+      quote.querySelector('small').textContent = reply.preview || 'Message';
+      quote.onclick = event => {
+        event.stopPropagation();
+
+        if (!reply.id) return;
+
+        const target = messageElements.get(String(reply.id));
+        if (!target) return;
+
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.classList.add('reply-target-pulse');
+        setTimeout(() => target.classList.remove('reply-target-pulse'), 1200);
+      };
+
+      container.appendChild(quote);
+    }
+
+    function getRoomAttachments() {
+      return activeRoomMessages
+        .filter(message => !message.deletedForEveryone && !message.deletedForMe)
+        .map(message => ({
+          message,
+          attachment: parseMessagePayload(message.message || message.content).attachment
+        }))
+        .filter(item => item.attachment);
+    }
+
+    function renderAttachmentContent(container, attachment) {
+      const wrap = document.createElement('div');
+      wrap.className = 'attachment-preview';
+
+      if (attachment.kind === 'image') {
+        const image = document.createElement('img');
+        image.src = attachment.dataUrl;
+        image.alt = attachment.name;
+        image.className = 'clickable-attachment-image';
+        image.onclick = () => openImageViewer(attachment);
+        wrap.appendChild(image);
+      } else if (attachment.kind === 'video') {
+        const video = document.createElement('video');
+        video.src = attachment.dataUrl;
+        video.controls = true;
+        video.preload = 'metadata';
+        wrap.appendChild(video);
+      } else {
+        const fileCard = document.createElement('a');
+        fileCard.className = 'file-attachment-card';
+        fileCard.href = attachment.dataUrl;
+        fileCard.download = attachment.name;
+        fileCard.title = attachment.name;
+
+        fileCard.innerHTML = `
+          <span class="file-attachment-icon">FILE</span>
+          <span class="file-attachment-meta">
+            <strong>${attachment.name}</strong>
+            <small>${attachment.type || 'File'} · ${formatFileSize(attachment.size || 0)}</small>
+          </span>
+          <span class="file-attachment-action">Download</span>
+        `;
+
+        wrap.appendChild(fileCard);
+      }
+
+      if (attachment.kind !== 'file') {
+        const link = document.createElement('a');
+        link.href = attachment.dataUrl;
+        link.download = attachment.name;
+        link.textContent = attachment.name;
+        link.title = attachment.name;
+        wrap.appendChild(link);
+      }
+
+      container.appendChild(wrap);
+    }
+
+    function formatFileSize(bytes) {
+      if (!bytes) return 'Unknown size';
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    function openImageViewer(attachment) {
+      const image = document.getElementById('image-viewer-img');
+      const download = document.getElementById('image-viewer-download');
+
+      image.src = attachment.dataUrl;
+      image.alt = attachment.name;
+      download.href = attachment.dataUrl;
+      download.download = attachment.name;
+      document.getElementById('image-viewer-modal').style.display = 'flex';
+    }
+
+    function closeImageViewer() {
+      document.getElementById('image-viewer-modal').style.display = 'none';
+      document.getElementById('image-viewer-img').src = '';
+    }
+
+    async function sendAttachmentFile(file) {
+      if (!file) return;
+
+      const maxBytes = 5 * 1024 * 1024;
+
+      if (file.size > maxBytes) {
+        alert('File is too large. Please choose a file up to 5 MB.');
+        return;
+      }
+
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        alert('Connection is not ready. Please try again.');
+        return;
+      }
+
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = event => resolve(event.target.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const attachment = {
+        name: file.name,
+        type: file.type || 'application/octet-stream',
+        size: file.size,
+        kind: file.type.startsWith('image/')
+          ? 'image'
+          : file.type.startsWith('video/')
+            ? 'video'
+            : 'file',
+        dataUrl
+      };
+
+      socket.send(JSON.stringify({
+        type: 'chat',
+        roomId: activeRoomId,
+        message: createReplyMessage(createAttachmentMessage(attachment))
+      }));
+
+      clearPendingReply();
+    }
+
+    messageFileInput.addEventListener('change', async () => {
+      const file = messageFileInput.files[0];
+      messageFileInput.value = '';
+      await sendAttachmentFile(file);
+    });
+
+    function insertBioEmoji(emoji) {
+      const start = profileBioInput.selectionStart || 0;
+      const end = profileBioInput.selectionEnd || 0;
+      const before = profileBioInput.value.slice(0, start);
+      const after = profileBioInput.value.slice(end);
+
+      profileBioInput.value = `${before}${emoji}${after}`;
+      updateProfileBioCounter();
+      profileBioInput.focus();
+      profileBioInput.selectionStart = start + emoji.length;
+      profileBioInput.selectionEnd = start + emoji.length;
+    }
+
+    profileBioInput.addEventListener('input', updateProfileBioCounter);
+
+    document.addEventListener('click', event => {
+      if (
+        !messageEmojiPicker.contains(event.target) &&
+        !event.target.classList.contains('emoji-trigger-btn')
+      ) {
+        messageEmojiPicker.style.display = 'none';
+      }
+
+      if (
+        !bioEmojiPicker.contains(event.target) &&
+        !event.target.classList.contains('bio-emoji-trigger-btn')
+      ) {
+        bioEmojiPicker.style.display = 'none';
+      }
+
+      document.querySelectorAll('.reaction-picker').forEach(picker => {
+        if (
+          !picker.contains(event.target) &&
+          !event.target.classList.contains('msg-emoji-btn')
+        ) {
+          picker.style.display = 'none';
+        }
+      });
+
+      document.querySelectorAll('.message-options-menu').forEach(menu => {
+        if (
+          !menu.contains(event.target) &&
+          !event.target.classList.contains('msg-actions-btn')
+        ) {
+          menu.style.display = 'none';
+        }
+      });
+    });
+
+    async function restoreSession() {
+      const token = localStorage.getItem('chat_token');
+      if (!token) return;
+
+      try {
+        const res = await fetch('/api/auth/me', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!res.ok) {
+          localStorage.removeItem('chat_token');
+          return;
+        }
+
+        const data = await res.json();
+        if (data.success && data.user) {
+          currentUser = data.user;
+          enterChat();
+        }
+      } catch (err) {
+        console.warn('Session restore failed:', err);
+        localStorage.removeItem('chat_token');
+      }
+    }
+
+    restoreSession();
+
+    function togglePasswordVisibility() {
+      const passwordInput = document.getElementById('auth-password');
+         const eyeIcon = document.getElementById('eye-icon');
+         const eyeSlashIcon = document.getElementById('eye-slash-icon');
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+           eyeIcon.style.display = 'none';
+           eyeSlashIcon.style.display = 'block';
+      } else {
+        passwordInput.type = 'password';
+           eyeIcon.style.display = 'block';
+           eyeSlashIcon.style.display = 'none';
+      }
+    }
+
+    function switchTab(mode) {
+      currentMode = mode;
+      authErrorBox.style.display = 'none';
+      authForm.reset();
+      syncPasswordToggleVisibility();
+
+      document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+      document.getElementById('tab-register').classList.toggle('active', mode === 'register');
+
+      const tabs = document.querySelector('.auth-tabs');
+      if (tabs) tabs.dataset.active = mode;
+
+      if (mode === 'login') {
+        avatarWrapper.style.display = 'none';
+        authSubtitle.textContent = 'Sign in to open your chat workspace';
+        authSubmitBtn.textContent = 'Sign In';
+      } else {
+        avatarWrapper.style.display = 'block';
+        authSubtitle.textContent = 'Create an account and choose your avatar';
+        authSubmitBtn.textContent = 'Create Account';
+      }
+    }
+
+    authForm.addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const username = document.getElementById('auth-username').value.trim();
+      const password = document.getElementById('auth-password').value;
+
+      const url = currentMode === 'login' ? '/api/auth/login' : '/api/auth/signup';
+
+      const body = currentMode === 'login'
+        ? { username, password }
+        : { username, password, avatar: selectedAvatarUrl };
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          authErrorBox.style.display = 'block';
+          authErrorBox.textContent = data.error || 'Authentication failed.';
+          return;
+        }
+
+        localStorage.setItem('chat_token', data.token);
+        currentUser = data.user;
+        enterChat();
+      } catch (err) {
+        authErrorBox.style.display = 'block';
+        authErrorBox.textContent = 'Server connection failed.';
+      }
+    });
+
+    async function enterChat() {
+      document.body.classList.add('chat-ready');
+      document.getElementById('auth-view').style.display = 'none';
+      document.getElementById('chat-view').style.display = 'flex';
+      closeMobileSidebar();
+
+      document.getElementById('current-user-name').textContent = `@${currentUser.username}`;
+      document.getElementById('current-user-avatar').src = getDisplayAvatar(currentUser, 0);
+      document.getElementById('profile-bio-preview').textContent = currentUser.bio || 'Active Member';
+
+      connectWebSocket();
+
+      // Wait briefly for the websocket connection to establish so the
+      // server can register this client as online before we fetch lists.
+      await waitForSocketOpen(4000);
+
+      await fetchUsersAndGroups();
+    }
+
+    function waitForSocketOpen(timeout = 4000) {
+      return new Promise(resolve => {
+        if (socket && socket.readyState === WebSocket.OPEN) return resolve();
+
+        if (!socket) return resolve();
+
+        const onOpen = () => {
+          try { socket.removeEventListener('open', onOpen); } catch (e) {}
+          resolve();
+        };
+
+        socket.addEventListener('open', onOpen);
+
+        setTimeout(() => {
+          try { socket.removeEventListener('open', onOpen); } catch (e) {}
+          resolve();
+        }, timeout);
+      });
+    }
+
+    async function fetchUsersAndGroups() {
+      const token = localStorage.getItem('chat_token');
+
+      const usersRes = await fetch('/api/users', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const usersData = await usersRes.json();
+      allUsers = usersData.users || [];
+      renderOnlineUsers();
+
+      const groupsRes = await fetch('/api/groups', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const groupsData = await groupsRes.json();
+      allGroups = groupsData.groups || [];
+      renderGroups();
+    }
+
+    function clearClientSession() {
+      localStorage.removeItem('chat_token');
+      document.body.classList.remove('chat-ready', 'sidebar-open');
+      currentUser = null;
+      onlineUsernames = new Set();
+      activeUsersCount = 0;
+      allUsers = [];
+      allGroups = [];
+    }
+
+    function forceClientLogout() {
+      clearClientSession();
+
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+
+      setTimeout(() => {
+        location.reload();
+      }, 100);
+    }
+
+    function connectWebSocket() {
+      const token = localStorage.getItem('chat_token');
+      socket = new WebSocket(`ws://${location.host}?token=${token}`);
+
+      socket.onopen = () => {
+        document.getElementById('ws-status-dot').classList.add('online');
+
+        socket.send(JSON.stringify({
+          type: 'get_history',
+          roomId: activeRoomId
+        }));
+      };
+
+      socket.onclose = () => {
+        document.getElementById('ws-status-dot').classList.remove('online');
+      };
+
+      socket.onmessage = async (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'force_logout') {
+          forceClientLogout();
+          return;
+        }
+
+        if (data.type === 'system' || data.type === 'notification') {
+          appendSystemMsg(data.message);
+        }
+
+        if (data.type === 'online_list') {
+          onlineUsernames = new Set(data.users.map(u => u.username));
+          activeUsersCount = data.count || data.users.length;
+
+          const activeUsersCountEl = document.getElementById('active-users-count');
+          if (activeUsersCountEl) activeUsersCountEl.textContent = activeUsersCount;
+
+          renderOnlineUsers();
+        }
+
+        if (data.type === 'typing' && data.roomId === activeRoomId) {
+          document.getElementById('typing-indicator').textContent =
+            `${data.username} is typing...`;
+
+          clearTimeout(typingTimer);
+          typingTimer = setTimeout(() => {
+            document.getElementById('typing-indicator').textContent = '';
+          }, 1500);
+        }
+
+        if (data.type === 'history') {
+          if (data.roomId === activeRoomId) {
+            activeRoomMessages = data.messages || [];
+            renderActiveRoomMessages();
+          }
+        }
+
+        if (data.type === 'chat') {
+          if (data.roomId === activeRoomId) {
+            activeRoomMessages.push(data);
+            appendChatMsg(data);
+          } else if (data.username !== currentUser.username) {
+            unreadCounts[data.roomId] = (unreadCounts[data.roomId] || 0) + 1;
+            renderOnlineUsers();
+            renderGroups();
+          }
+        }
+
+        if (data.type === 'reaction' && data.roomId === activeRoomId) {
+          updateMessageReactions(data.messageId, data.reactions || {});
+        }
+
+        if (data.type === 'message_deleted' && data.roomId === activeRoomId) {
+          applyMessageDeletion(data.messageId, data.mode);
+        }
+
+        if (data.type === 'group_created' || data.type === 'group_updated' || data.type === 'group_deleted') {
+          await fetchUsersAndGroups();
+
+          if (data.type === 'group_deleted') {
+            const deletedRoomId = `group_${data.groupId}`;
+            delete unreadCounts[deletedRoomId];
+            closeRoomInfoModal();
+            closeManageGroupModal();
+
+            if (activeRoomId === deletedRoomId) {
+              switchRoom('lounge', 'Global');
+            }
+          }
+
+          if (
+            activeRoomId.startsWith('group_') &&
+            !getActiveGroup()
+          ) {
+            switchRoom('lounge');
+          }
+        }
+      };
+    }
+
+    messageForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const input = document.getElementById('message-input');
+      const message = input.value.trim();
+
+      if (!message || !socket || socket.readyState !== WebSocket.OPEN) return;
+
+      socket.send(JSON.stringify({
+        type: 'chat',
+        roomId: activeRoomId,
+        message: createReplyMessage(message)
+      }));
+
+      input.value = '';
+      clearPendingReply();
+    });
+
+    document.getElementById('message-input').addEventListener('input', () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+          type: 'typing',
+          roomId: activeRoomId
+        }));
+      }
+    });
+
+    function appendSystemMsg(msg) {
+      const el = document.createElement('div');
+      el.className = 'msg-system';
+      el.textContent = msg;
+      chatBox.appendChild(el);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendChatMsg(payload) {
+      const el = document.createElement('div');
+      const isMe = payload.username === currentUser.username;
+      const messageId = String(payload._id || payload.id || '');
+      const isDeletedForEveryone = Boolean(payload.deletedForEveryone);
+      const isDeletedForMe = Boolean(payload.deletedForMe);
+      const isDeleted = isDeletedForEveryone || isDeletedForMe;
+
+      el.className = `msg-wrapper ${isMe ? 'me' : 'other'}`;
+      if (messageId) {
+        el.dataset.messageId = messageId;
+        messageElements.set(messageId, el);
+      }
+
+      const bubble = document.createElement('div');
+      bubble.className = `msg-bubble ${isDeleted ? 'is-deleted' : ''}`;
+
+      const actions = document.createElement('div');
+      actions.className = 'msg-actions';
+
+      const emojiButton = document.createElement('button');
+      emojiButton.type = 'button';
+      emojiButton.className = 'msg-emoji-btn';
+      emojiButton.textContent = String.fromCharCode(9786);
+      emojiButton.title = 'React to message';
+      emojiButton.onclick = event => {
+        event.stopPropagation();
+        const picker = actions.querySelector('.reaction-picker');
+        picker.style.display = picker.style.display === 'none' ? 'flex' : 'none';
+      };
+
+      const actionButton = document.createElement('button');
+      actionButton.type = 'button';
+      actionButton.className = 'msg-actions-btn';
+      actionButton.textContent = '...';
+      actionButton.title = 'More';
+      actionButton.onclick = event => {
+        event.stopPropagation();
+        const menu = actions.querySelector('.message-options-menu');
+        menu.style.display = menu.style.display === 'none' ? 'grid' : 'none';
+      };
+
+      const reactionPicker = document.createElement('div');
+      reactionPicker.className = 'reaction-picker';
+      reactionPicker.style.display = 'none';
+
+      chatEmojis.forEach(emoji => {
+        const reactionButton = document.createElement('button');
+        reactionButton.type = 'button';
+        reactionButton.className = 'emoji-option';
+        reactionButton.title = emoji.label;
+        reactionButton.textContent = emoji.value;
+        reactionButton.onclick = event => {
+          event.stopPropagation();
+          sendReaction(messageId, emoji.value);
+          reactionPicker.style.display = 'none';
+        };
+
+        reactionPicker.appendChild(reactionButton);
+      });
+
+      const optionsMenu = document.createElement('div');
+      optionsMenu.className = 'message-options-menu';
+      optionsMenu.style.display = 'none';
+
+      const replyButton = document.createElement('button');
+      replyButton.type = 'button';
+      replyButton.className = 'message-reply-option';
+      replyButton.textContent = 'Reply';
+      replyButton.onclick = event => {
+        event.stopPropagation();
+        startReply(payload);
+        optionsMenu.style.display = 'none';
+      };
+
+      const deleteButton = document.createElement('button');
+      deleteButton.type = 'button';
+      deleteButton.className = 'message-delete-option';
+      deleteButton.textContent = 'Delete';
+      deleteButton.onclick = event => {
+        event.stopPropagation();
+        openDeleteMessageModal(messageId, isMe);
+        optionsMenu.style.display = 'none';
+      };
+
+      optionsMenu.appendChild(replyButton);
+      optionsMenu.appendChild(deleteButton);
+
+      if (!isDeleted && messageId) {
+        actions.appendChild(emojiButton);
+        actions.appendChild(actionButton);
+      }
+
+      actions.appendChild(reactionPicker);
+      actions.appendChild(optionsMenu);
+      bubble.appendChild(actions);
+
+      const sender = document.createElement('strong');
+      sender.textContent = payload.username || payload.sender || 'User';
+
+      const content = payload.message || payload.content || '';
+      const parsedContent = parseMessagePayload(content);
+      const attachment = parsedContent.attachment;
+
+      const meta = document.createElement('small');
+      meta.className = 'msg-meta';
+
+      const time = payload.timestamp
+        ? new Date(payload.timestamp).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        : '';
+
+      meta.textContent = isMe
+        ? `${time ? `${time} - ` : ''}Sent \u2713`
+        : time;
+
+      bubble.appendChild(sender);
+      renderReplyQuote(bubble, parsedContent.reply);
+
+      if (isDeleted) {
+        const deletedText = document.createElement('p');
+        deletedText.className = 'deleted-message-text';
+        deletedText.textContent = isDeletedForMe
+          ? 'You removed this message for you.'
+          : 'This message was deleted.';
+        bubble.appendChild(deletedText);
+      } else if (attachment) {
+        renderAttachmentContent(bubble, attachment);
+      } else {
+        const text = document.createElement('p');
+        text.textContent = parsedContent.body;
+        bubble.appendChild(text);
+      }
+
+      bubble.appendChild(meta);
+
+      const reactions = document.createElement('div');
+      reactions.className = 'msg-reactions';
+      bubble.appendChild(reactions);
+
+      if (!isMe) {
+        const avatar = document.createElement('img');
+        const user = getUserByUsername(payload.username || payload.sender || 'User');
+        avatar.className = 'msg-avatar';
+        avatar.src = getDisplayAvatar(user, 0);
+        avatar.alt = '';
+        el.appendChild(avatar);
+      }
+
+      el.appendChild(bubble);
+
+      chatBox.appendChild(el);
+      if (!isDeleted) renderMessageReactions(el, payload.reactions || {});
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function renderActiveRoomMessages() {
+      chatBox.innerHTML = '';
+      messageElements.clear();
+      activeRoomMessages.forEach(msg => appendChatMsg(msg));
+    }
+
+    function sendReaction(messageId, emoji) {
+      if (!messageId || !socket || socket.readyState !== WebSocket.OPEN) return;
+
+      socket.send(JSON.stringify({
+        type: 'reaction',
+        roomId: activeRoomId,
+        messageId,
+        emoji
+      }));
+    }
+
+    function openDeleteMessageModal(messageId, canDeleteEveryone = false) {
+      if (!messageId) return;
+
+      pendingDeleteMessageId = messageId;
+      pendingDeleteCanEveryone = canDeleteEveryone;
+
+      const everyoneChoice = document.querySelector('input[name="delete-message-choice"][value="everyone"]');
+      const meChoice = document.querySelector('input[name="delete-message-choice"][value="me"]');
+
+      everyoneChoice.disabled = !canDeleteEveryone;
+      everyoneChoice.closest('.delete-choice-row').classList.toggle('is-disabled', !canDeleteEveryone);
+
+      if (canDeleteEveryone) {
+        everyoneChoice.checked = true;
+      } else {
+        meChoice.checked = true;
+      }
+
+      document.getElementById('delete-message-modal').style.display = 'flex';
+    }
+
+    function closeDeleteMessageModal() {
+      document.getElementById('delete-message-modal').style.display = 'none';
+      pendingDeleteMessageId = null;
+      pendingDeleteCanEveryone = false;
+    }
+
+    function confirmDeleteMessage() {
+      if (!pendingDeleteMessageId || !socket || socket.readyState !== WebSocket.OPEN) return;
+
+      const selected = document.querySelector('input[name="delete-message-choice"]:checked');
+      const mode = selected ? selected.value : 'everyone';
+      const finalMode = mode === 'everyone' && !pendingDeleteCanEveryone ? 'me' : mode;
+
+      socket.send(JSON.stringify({
+        type: 'delete_message',
+        roomId: activeRoomId,
+        messageId: pendingDeleteMessageId,
+        mode: finalMode
+      }));
+
+      closeDeleteMessageModal();
+    }
+
+    function applyMessageDeletion(messageId, mode) {
+      activeRoomMessages = activeRoomMessages.map(message => {
+        const id = String(message._id || message.id || '');
+
+        if (id !== String(messageId)) return message;
+
+        return {
+          ...message,
+          deletedForEveryone: mode === 'everyone' || message.deletedForEveryone,
+          deletedForMe: mode === 'me' || message.deletedForMe,
+          reactions: mode === 'everyone' ? {} : message.reactions
+        };
+      });
+
+      renderActiveRoomMessages();
+    }
+
+    function updateMessageReactions(messageId, reactions) {
+      const messageEl = messageElements.get(String(messageId));
+
+      if (messageEl) {
+        renderMessageReactions(messageEl, reactions);
+      }
+    }
+
+    function renderMessageReactions(messageEl, reactions) {
+      const box = messageEl.querySelector('.msg-reactions');
+      if (!box) return;
+
+      box.innerHTML = '';
+
+      Object.entries(reactions || {}).forEach(([emoji, users]) => {
+        if (!users || users.length === 0) return;
+
+        const badge = document.createElement('span');
+        badge.className = 'reaction-badge';
+        badge.title = users.join(', ');
+        badge.textContent = `${emoji} ${users.length}`;
+        box.appendChild(badge);
+      });
+    }
+
+
+        function renderOnlineUsers() {
+      const list = document.getElementById('online-users-list');
+      const searchValue =
+        document.getElementById('user-search').value.toLowerCase();
+      const onlineCount = allUsers.filter(
+        user => user.username !== currentUser?.username && onlineUsernames.has(user.username)
+      ).length;
+
+      document.getElementById('direct-messages-title').textContent =
+        `Direct Messages${onlineCount > 0 ? ` (${onlineCount} online)` : ''}`;
+
+      list.innerHTML = '';
+
+      allUsers
+        .filter(user => user.username !== currentUser?.username)
+        .filter(user =>
+          user.username.toLowerCase().includes(searchValue)
+        )
+        .forEach((user, index) => {
+          const dmRoomId =
+            `dm_${[currentUser.username, user.username]
+              .sort()
+              .join('_')}`;
+          const unread = unreadCounts[dmRoomId] || 0;
+
+          const div = document.createElement('div');
+          const isOnline = onlineUsernames.has(user.username);
+          const safeUsername = escapeHtml(user.username);
+          const safeAvatar = escapeHtml(getDisplayAvatar(user, index));
+
+          div.className = `online-user ${activeRoomId === dmRoomId ? 'active' : ''}`;
+          div.dataset.roomId = dmRoomId;
+
+          div.innerHTML = `
+            <img src="${safeAvatar}" alt="">
+            <div class="user-info">
+              <div class="user-line">
+                <span>${safeUsername}</span>
+                ${unread ? `<span class="badge-count">${unread}</span>` : ''}
+              </div>
+              <div class="status-row">
+                <span class="status-dot ${isOnline ? 'online' : 'offline'}"></span>
+                <small class="${isOnline ? 'online-status' : 'offline-status'}">
+                  ${isOnline ? 'Online' : 'Offline'}
+                </small>
+              </div>
+            </div>
+          `;
+
+          div.onclick = () => {
+            switchRoom(dmRoomId, user.username);
+          };
+
+          list.appendChild(div);
+        });
+    }
+
+    function renderGroups() {
+      const list = document.getElementById('groups-list');
+      list.innerHTML = '';
+
+      allGroups.forEach(group => {
+        const roomId = `group_${group._id}`;
+        const unread = unreadCounts[roomId] || 0;
+        const safeGroupName = escapeHtml(group.name);
+        const memberCount = group.members?.length || 0;
+        const groupAvatar = renderGroupAvatar(group);
+
+        const div = document.createElement('div');
+        div.className = `group-item ${activeRoomId === roomId ? 'active' : ''}`;
+        div.dataset.roomId = roomId;
+
+        div.innerHTML = `
+          ${groupAvatar}
+          <div class="group-meta">
+            <div class="group-line">
+              <strong>${safeGroupName}</strong>
+              ${unread ? `<span class="badge-count">${unread}</span>` : ''}
+            </div>
+            <small>${memberCount} ${memberCount === 1 ? 'member' : 'members'}</small>
+          </div>
+        `;
+
+        div.onclick = () =>
+          switchRoom(
+            `group_${group._id}`,
+            group.name
+          );
+
+        list.appendChild(div);
+      });
+    }
+
+    function updateActiveNavigation() {
+      document.getElementById('lounge-room-btn')?.classList.toggle(
+        'active',
+        activeRoomId === 'lounge'
+      );
+
+      document.querySelectorAll('[data-room-id]').forEach(item => {
+        item.classList.toggle('active', item.dataset.roomId === activeRoomId);
+      });
+    }
+
+    function switchRoom(roomId, title = null) {
+      activeRoomId = roomId;
+      closeMobileSidebar();
+      updateActiveNavigation();
+      viewMembersBtn.classList.toggle(
+        'is-visible',
+        roomId === 'lounge' || roomId.startsWith('group_') || roomId.startsWith('dm_')
+      );
+      clearPendingReply();
+
+      if (unreadCounts[roomId]) {
+        delete unreadCounts[roomId];
+        renderOnlineUsers();
+        renderGroups();
+      }
+
+      chatBox.innerHTML = '';
+      messageElements.clear();
+      activeRoomMessages = [];
+
+      if (roomId === 'lounge') {
+        document.getElementById('room-title').textContent =
+          'Global';
+
+        document.getElementById('room-subtitle').textContent =
+          '';
+      }
+
+      else if (roomId.startsWith('dm_')) {
+        document.getElementById('room-title').textContent =
+          title || 'Direct Message';
+
+        document.getElementById('room-subtitle').textContent =
+          'Private conversation';
+      }
+
+      else {
+        document.getElementById('room-title').textContent =
+          title || 'Group Chat';
+
+        document.getElementById('room-subtitle').textContent =
+          'Group conversation';
+      }
+
+      if (
+        socket &&
+        socket.readyState === WebSocket.OPEN
+      ) {
+        socket.send(
+          JSON.stringify({
+            type: 'get_history',
+            roomId: activeRoomId
+          })
+        );
+      }
+    }
+
+    document
+      .getElementById('user-search')
+      .addEventListener('input', renderOnlineUsers);
+
+    function openCreateGroupModal() {
+      document.getElementById('group-modal').style.display = 'flex';
+      document.getElementById('group-name').value = '';
+
+      const box =
+        document.getElementById('group-members-select');
+
+      box.innerHTML = '';
+
+      allUsers.forEach(user => {
+        if (user.username === currentUser.username) return;
+
+        const label = document.createElement('label');
+        label.className = 'member-pick-row';
+
+        label.innerHTML = `
+          <img src="${user.avatar}" alt="">
+          <span class="member-pick-meta">
+            <strong>${user.username}</strong>
+            <small>${user.bio || 'Infinity Chat user'}</small>
+          </span>
+          <input
+            type="checkbox"
+            name="members"
+            value="${user.username}"
+          >
+        `;
+
+        box.appendChild(label);
+      });
+    }
+
+    function closeCreateGroupModal() {
+      document.getElementById('group-modal').style.display = 'none';
+    }
+
+    function closeManageGroupModal() {
+      document.getElementById('manage-group-modal').style.display = 'none';
+    }
+
+    function getDmRoomUsers(roomId = activeRoomId) {
+      if (!roomId.startsWith('dm_')) return [];
+
+      return roomId
+        .replace('dm_', '')
+        .split('_')
+        .filter(Boolean)
+        .map(username => getUserByUsername(username));
+    }
+
+    function getRoomInfoUsers(group, isLounge, isDm = false) {
+      if (isLounge) {
+        return [...allUsers].sort((a, b) => {
+          const aOnline = onlineUsernames.has(a.username) ? 0 : 1;
+          const bOnline = onlineUsernames.has(b.username) ? 0 : 1;
+          return aOnline - bOnline || a.username.localeCompare(b.username);
+        });
+      }
+
+      if (isDm) {
+        return getDmRoomUsers();
+      }
+
+      return (group.members || []).map(username => getUserByUsername(username));
+    }
+
+    function renderRoomInfoAvatar(group, isLounge, users = []) {
+      if (isLounge) {
+        return '<span class="room-info-logo"><span class="infinity-logo"></span></span>';
+      }
+
+      const savedAvatar = group ? getSavedGroupAvatar(group) : '';
+
+      if (savedAvatar) {
+        return renderSavedGroupAvatar(savedAvatar, group.name);
+      }
+
+      const members = group
+        ? getGroupAvatarMembers(group).slice(0, 4)
+        : users.map(user => user.username).slice(0, 4);
+
+      if (!members.length) {
+        return '<span class="room-info-initials">IC</span>';
+      }
+
+      return `
+        <div class="room-info-avatar-stack room-count-${members.length}">
+          ${members.map((username, index) => {
+            const user = getUserByUsername(username);
+            return `<img src="${escapeHtml(getDisplayAvatar(user, index))}" alt="${escapeHtml(user.username)}">`;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function renderRoomInfoStats(stats) {
+      return stats.map(stat => `
+        <div class="room-info-stat">
+          <strong>${escapeHtml(stat.value)}</strong>
+          <span>${escapeHtml(stat.label)}</span>
+          <small>${escapeHtml(stat.note)}</small>
+        </div>
+      `).join('');
+    }
+
+    function renderRoomInfoPreview(users, isLounge, isDm = false) {
+      const visibleUsers = users.slice(0, 5);
+      const moreCount = Math.max(0, users.length - visibleUsers.length);
+      const title = isLounge ? 'People Online' : isDm ? 'Private Chat' : 'Member Preview';
+
+      if (!visibleUsers.length) {
+        return `
+          <div class="room-info-preview-title">
+            <strong>${title}</strong>
+          </div>
+          <p class="room-info-empty">No profiles to show yet.</p>
+        `;
+      }
+
+      return `
+        <div class="room-info-preview-title">
+          <strong>${title}</strong>
+          <small>${users.length} ${users.length === 1 ? 'profile' : 'profiles'}</small>
+        </div>
+        <div class="room-info-member-strip">
+          ${visibleUsers.map((user, index) => {
+            const isOnline = onlineUsernames.has(user.username);
+            return `
+              <button type="button" class="room-info-member-chip" onclick="closeRoomInfoModal(); openProfileModal(getUserByUsername('${escapeHtml(user.username)}'), '${escapeHtml(user.username)}' === currentUser.username)">
+                <span>
+                  <img src="${escapeHtml(getDisplayAvatar(user, index))}" alt="">
+                  <i class="${isOnline ? 'online' : ''}"></i>
+                </span>
+                <strong>${escapeHtml(user.username)}</strong>
+              </button>
+            `;
+          }).join('')}
+          ${moreCount ? `<span class="room-info-more">+${moreCount}</span>` : ''}
+        </div>
+      `;
+    }
+
+    function openRoomInfoModal() {
+      let group = getActiveGroup();
+      const isLounge = activeRoomId === 'lounge';
+      const isDm = activeRoomId.startsWith('dm_');
+      if (!group && !isLounge && !isDm) return;
+
+      const users = getRoomInfoUsers(group, isLounge, isDm);
+      const dmPeer = isDm
+        ? users.find(user => user.username.toLowerCase() !== currentUser.username.toLowerCase()) || users[0]
+        : null;
+      const title = isLounge ? 'Global' : isDm ? dmPeer?.username || 'Private Message' : group.name;
+      if (isDm) {
+        group = {
+          name: title,
+          creator: '',
+          members: users.map(user => user.username)
+        };
+      }
+      const onlineCount = isLounge
+        ? onlineUsernames.size
+        : isDm
+          ? users.filter(user => onlineUsernames.has(user.username)).length
+          : (group.members || []).filter(username => onlineUsernames.has(username)).length;
+      const attachments = getRoomAttachments();
+      const imageCount = attachments.filter(item => item.attachment.kind === 'image').length;
+      const fileCount = attachments.filter(item => item.attachment.kind === 'file').length;
+      const videoCount = attachments.filter(item => item.attachment.kind === 'video').length;
+
+      document.getElementById('room-info-kicker').textContent =
+        isLounge ? 'Public Channel' : group.creator === currentUser.username ? 'Group Channel · Admin' : 'Group Channel';
+
+      document.getElementById('room-info-title').textContent = `${title} Info`;
+      document.getElementById('room-info-subtitle').textContent =
+        isLounge
+          ? 'Open realtime channel for everyone in Infinity Chat.'
+          : `${group.members?.length || 0} ${group.members?.length === 1 ? 'member' : 'members'} · Created by ${group.creator || 'Unknown'}`;
+
+      roomInfoAvatar.innerHTML = renderRoomInfoAvatar(group, isLounge);
+
+      if (isDm) {
+        document.getElementById('room-info-kicker').textContent = 'Private Channel';
+        document.getElementById('room-info-subtitle').textContent =
+          `${users.length} ${users.length === 1 ? 'person' : 'people'} - Private conversation`;
+        roomInfoAvatar.innerHTML = renderRoomInfoAvatar(null, false, users);
+      }
+
+      document.getElementById('room-info-stats').innerHTML = renderRoomInfoStats([
+        {
+          value: String(isLounge ? allUsers.length : group.members?.length || 0),
+          label: isLounge ? 'Users' : 'Members',
+          note: `${onlineCount} online`
+        },
+        {
+          value: String(attachments.length),
+          label: 'Uploads',
+          note: `${imageCount} photos · ${fileCount} files`
+        }
+      ]);
+
+      if (isDm) {
+        document.getElementById('room-info-stats').innerHTML = renderRoomInfoStats([
+          {
+            value: String(users.length),
+            label: 'People',
+            note: `${onlineCount} online`
+          },
+          {
+            value: String(attachments.length),
+            label: 'Uploads',
+            note: `${imageCount} photos - ${fileCount} files - ${videoCount} videos`
+          }
+        ]);
+      }
+
+      document.getElementById('room-info-preview').innerHTML =
+        renderRoomInfoPreview(users, isLounge, isDm);
+
+      roomInfoProfileEdit.style.display = isLounge ? 'none' : 'grid';
+      roomInfoUploadBtn.style.display = isLounge ? 'none' : 'inline-flex';
+      if (isDm) {
+        roomInfoProfileEdit.style.display = 'none';
+        roomInfoUploadBtn.style.display = 'none';
+      }
+      setRoomInfoProfileStatus('', '');
+      setRoomInfoSaving(false);
+
+      if (!isLounge && !isDm) {
+        groupRoomNameInput.value = group.name || '';
+      }
+
+      document
+        .getElementById('room-info-members-btn')
+        .style
+        .setProperty('display', isLounge ? 'none' : 'grid', 'important');
+
+      if (isDm) {
+        document
+          .getElementById('room-info-members-btn')
+          .style
+          .setProperty('display', 'none', 'important');
+      }
+
+      document
+        .getElementById('room-info-delete-group-btn')
+        .style
+        .setProperty(
+          'display',
+          !isLounge && group.creator === currentUser.username ? 'grid' : 'none',
+          'important'
+        );
+
+      document.getElementById('room-info-modal').style.display = 'flex';
+    }
+
+    function closeRoomInfoModal() {
+      document.getElementById('room-info-modal').style.display = 'none';
+    }
+
+    function openGroupMembersFromInfo() {
+      closeRoomInfoModal();
+      openGroupMembersModal();
+    }
+
+    async function saveGroupProfile(updates = {}) {
+      const group = getActiveGroup();
+
+      if (!group) {
+        setRoomInfoSaving(false);
+        return null;
+      }
+
+      const nextName = typeof updates.name === 'string'
+        ? updates.name.trim()
+        : groupRoomNameInput?.value.trim() || group.name || '';
+
+      const nextAvatar = typeof updates.avatar === 'string'
+        ? updates.avatar.trim()
+        : group.avatar || '';
+
+      if (!nextName) {
+        alert('Group name is required.');
+        setRoomInfoProfileStatus('Group name is required.', 'error');
+        return null;
+      }
+
+      const token = localStorage.getItem('chat_token');
+
+      try {
+        setRoomInfoSaving(true);
+        setRoomInfoProfileStatus('Saving changes...', 'saving');
+
+        const res = await fetch(`/api/groups/${group._id}/profile`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ name: nextName, avatar: nextAvatar })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.error || 'Failed to update group profile.');
+          setRoomInfoProfileStatus(data.error || 'Failed to save changes.', 'error');
+          roomInfoAvatar.innerHTML = renderRoomInfoAvatar(group, false);
+          groupProfileImageInput.value = '';
+          return null;
+        }
+
+        await fetchUsersAndGroups();
+
+        const savedGroup = data.group || getActiveGroup();
+        document.getElementById('room-info-title').textContent = `${savedGroup.name} Info`;
+        document.getElementById('room-info-subtitle').textContent =
+          `${savedGroup.members?.length || 0} ${savedGroup.members?.length === 1 ? 'member' : 'members'} - Created by ${savedGroup.creator || 'Unknown'}`;
+        document.getElementById('room-title').textContent = savedGroup.name || 'Group Chat';
+        roomInfoAvatar.innerHTML = renderRoomInfoAvatar(savedGroup, false);
+        groupRoomNameInput.value = savedGroup.name || '';
+        groupProfileImageInput.value = '';
+        setRoomInfoProfileStatus('Saved', 'success');
+        return savedGroup;
+      } catch (error) {
+        alert('Failed to update group profile.');
+        setRoomInfoProfileStatus('Failed to save changes.', 'error');
+        roomInfoAvatar.innerHTML = renderRoomInfoAvatar(group, false);
+        groupProfileImageInput.value = '';
+        return null;
+      } finally {
+        setRoomInfoSaving(false);
+      }
+    }
+
+    function openMediaModal() {
+      const items = getRoomAttachments();
+      const preferredItem =
+        items.find(item => item.attachment.kind === activeMediaFilter) ||
+        items.find(item => item.attachment.kind === 'image') ||
+        items.find(item => item.attachment.kind === 'file') ||
+        items.find(item => item.attachment.kind === 'video');
+
+      activeMediaFilter = preferredItem?.attachment.kind || 'image';
+      renderMediaList();
+      closeRoomInfoModal();
+      document.getElementById('media-modal').style.display = 'flex';
+    }
+
+    function closeMediaModal() {
+      document.getElementById('media-modal').style.display = 'none';
+    }
+
+    function setMediaFilter(filter) {
+      activeMediaFilter = filter;
+      renderMediaList();
+    }
+
+    function updateMediaFilterTabs(items) {
+      const counts = { image: 0, file: 0, video: 0 };
+
+      items.forEach(({ attachment }) => {
+        if (counts[attachment.kind] !== undefined) {
+          counts[attachment.kind] += 1;
+        }
+      });
+
+      document.getElementById('media-photo-count').textContent = counts.image;
+      document.getElementById('media-file-count').textContent = counts.file;
+      document.getElementById('media-video-count').textContent = counts.video;
+
+      document.querySelectorAll('.media-filter-tab').forEach(button => {
+        button.classList.toggle(
+          'active',
+          button.dataset.mediaFilter === activeMediaFilter
+        );
+      });
+    }
+
+    function renderMediaList() {
+      const list = document.getElementById('media-list');
+      const allItems = getRoomAttachments();
+      const labels = {
+        image: 'photos',
+        file: 'files',
+        video: 'videos'
+      };
+      const items = allItems.filter(
+        ({ attachment }) => attachment.kind === activeMediaFilter
+      );
+
+      list.innerHTML = '';
+      updateMediaFilterTabs(allItems);
+
+      if (allItems.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'media-empty';
+        empty.textContent = 'No files, photos, or videos have been uploaded here yet.';
+        list.appendChild(empty);
+        return;
+      }
+
+      if (items.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'media-empty';
+        empty.textContent = `No ${labels[activeMediaFilter]} have been uploaded here yet.`;
+        list.appendChild(empty);
+        return;
+      }
+
+      items.forEach(({ message, attachment }) => {
+        const item = document.createElement('div');
+        item.className = 'media-item';
+
+        renderAttachmentContent(item, attachment);
+
+        const meta = document.createElement('small');
+        meta.textContent = `${message.username || message.sender || 'User'}${
+          message.timestamp
+            ? ` · ${new Date(message.timestamp).toLocaleString([], {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}`
+            : ''
+        }`;
+
+        item.appendChild(meta);
+        list.appendChild(item);
+      });
+    }
+
+    function showConfirm(message, title = 'Confirm Action') {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-message').textContent = message;
+      document.getElementById('confirm-modal').style.display = 'flex';
+
+      return new Promise(resolve => {
+        pendingConfirmResolve = resolve;
+      });
+    }
+
+    function resolveConfirm(confirmed) {
+      document.getElementById('confirm-modal').style.display = 'none';
+
+      if (pendingConfirmResolve) {
+        pendingConfirmResolve(confirmed);
+        pendingConfirmResolve = null;
+      }
+    }
+
+    function openGroupMembersModal() {
+      const group = getActiveGroup();
+      if (!group) return;
+
+      const box = document.getElementById('manage-group-members');
+      const isAdmin = group.creator === currentUser.username;
+
+      document.getElementById('manage-group-title').textContent =
+        `${group.name} Members`;
+
+      box.innerHTML = '';
+
+      group.members.forEach(username => {
+        const user = getUserByUsername(username);
+        const row = document.createElement('div');
+        row.className = 'group-member-row';
+
+        const profileButton = document.createElement('button');
+        profileButton.type = 'button';
+        profileButton.className = 'member-profile-button';
+        profileButton.onclick = () => openProfileModal(user, username === currentUser.username);
+
+        profileButton.innerHTML = `
+          <img src="${user.avatar}" alt="">
+          <span class="member-profile-meta">
+            <strong>${user.username}</strong>
+            <small>${user.bio || 'Infinity Chat user'}</small>
+          </span>
+        `;
+
+        row.appendChild(profileButton);
+
+        if (username === group.creator) {
+          const adminBadge = document.createElement('span');
+          adminBadge.className = 'admin-badge';
+          adminBadge.textContent = 'Admin';
+          row.appendChild(adminBadge);
+        }
+
+        if (isAdmin && username !== group.creator) {
+          const deleteButton = document.createElement('button');
+          deleteButton.type = 'button';
+          deleteButton.className = 'delete-member-btn';
+          deleteButton.textContent = 'Remove Member';
+          deleteButton.onclick = () => deleteGroupMember(username);
+          row.appendChild(deleteButton);
+        }
+
+        box.appendChild(row);
+      });
+
+      renderAddMemberPanel(group, isAdmin);
+
+      document.getElementById('manage-group-modal').style.display = 'flex';
+    }
+
+    function renderAddMemberPanel(group, isAdmin) {
+      const panel = document.getElementById('add-group-member-panel');
+      panel.innerHTML = '';
+
+      if (!isAdmin) return;
+
+      const availableUsers = allUsers.filter(user =>
+        user.username !== currentUser.username &&
+        !group.members.some(member => member.toLowerCase() === user.username.toLowerCase())
+      );
+
+      const addButton = document.createElement('button');
+      addButton.type = 'button';
+      addButton.className = 'add-member-toggle-btn';
+      addButton.textContent = 'Add Member';
+
+      const picker = document.createElement('div');
+      picker.className = 'add-member-picker';
+      picker.style.display = 'none';
+
+      addButton.onclick = () => {
+        picker.style.display = picker.style.display === 'none' ? 'flex' : 'none';
+      };
+
+      if (availableUsers.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'add-member-empty';
+        empty.textContent = 'All users are already in this group.';
+        picker.appendChild(empty);
+      } else {
+        availableUsers.forEach(user => {
+          const row = document.createElement('button');
+          row.type = 'button';
+          row.className = 'add-member-row';
+          row.onclick = () => addGroupMember(user.username);
+
+          row.innerHTML = `
+            <img src="${user.avatar}" alt="">
+            <span class="member-pick-meta">
+              <strong>${user.username}</strong>
+              <small>${user.bio || 'Infinity Chat user'}</small>
+            </span>
+            <span class="add-member-plus">Add</span>
+          `;
+
+          picker.appendChild(row);
+        });
+      }
+
+      panel.appendChild(addButton);
+      panel.appendChild(picker);
+    }
+
+    async function addGroupMember(username) {
+      const group = getActiveGroup();
+      if (!group || group.creator !== currentUser.username) return;
+
+      const confirmed = await showConfirm(
+        `Add ${username} to ${group.name}?`,
+        'Add Group Member'
+      );
+
+      if (!confirmed) return;
+
+      const token = localStorage.getItem('chat_token');
+      const members = Array.from(new Set([...group.members, username]));
+
+      const res = await fetch(`/api/groups/${group._id}/members`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ members })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || 'Failed to add member.');
+        return;
+      }
+
+      await fetchUsersAndGroups();
+      openGroupMembersModal();
+    }
+
+    async function deleteGroupMember(username) {
+      const group = getActiveGroup();
+      if (!group || group.creator !== currentUser.username || username === group.creator) return;
+
+      const confirmed = await showConfirm(
+        `Remove ${username} from ${group.name}?`,
+        'Remove Group Member'
+      );
+
+      if (!confirmed) return;
+
+      const token = localStorage.getItem('chat_token');
+      const members = group.members.filter(member => member !== username);
+
+      const res = await fetch(`/api/groups/${group._id}/members`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ members })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || 'Failed to delete member.');
+        return;
+      }
+
+      await fetchUsersAndGroups();
+      openGroupMembersModal();
+    }
+
+    async function deleteGroupChat() {
+      const group = getActiveGroup();
+
+      if (!group || group.creator !== currentUser.username) return;
+
+      const confirmed = await showConfirm(
+        `Delete ${group.name}? This removes the group chat and its messages for every member.`,
+        'Delete Group Chat'
+      );
+
+      if (!confirmed) return;
+
+      const token = localStorage.getItem('chat_token');
+      const res = await fetch(`/api/groups/${encodeURIComponent(group._id)}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      let data = {};
+
+      try {
+        data = await res.json();
+      } catch {
+        data = {};
+      }
+
+      if (!res.ok) {
+        alert(data.error || 'Failed to delete group.');
+        return;
+      }
+
+      delete unreadCounts[`group_${group._id}`];
+      closeRoomInfoModal();
+      closeManageGroupModal();
+      await fetchUsersAndGroups();
+      switchRoom('lounge', 'Global');
+    }
+
+    async function createGroup() {
+      const name =
+        document.getElementById('group-name')
+          .value
+          .trim();
+
+      const checked =
+        document.querySelectorAll(
+          'input[name="members"]:checked'
+        );
+
+      const members =
+        Array.from(checked)
+          .map(c => c.value);
+
+      if (!name || members.length === 0) {
+        alert(
+          'Enter group name and select members.'
+        );
+        return;
+      }
+
+      const token =
+        localStorage.getItem('chat_token');
+
+      const res = await fetch(
+        '/api/groups',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            name,
+            members
+          })
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+
+        closeCreateGroupModal();
+
+        await fetchUsersAndGroups();
+
+        switchRoom(
+          `group_${data.group._id}`,
+          data.group.name
+        );
+      }
+
+      else {
+        alert(
+          data.error ||
+          'Failed to create group.'
+        );
+      }
+    }
+
+    function formatProfileDate(value) {
+      if (!value) return 'New';
+
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return 'New';
+
+      return date.toLocaleDateString([], {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+
+    function updateProfileBioCounter() {
+      return;
+    }
+
+    function openProfileModal(user, editable = false) {
+
+      document.getElementById('profile-modal')
+        .style.display = 'flex';
+
+      const profileAvatar = getDisplayAvatar(user, 0);
+
+      document.getElementById('profile-preview')
+        .src = profileAvatar;
+
+      selectedProfileAvatar = profileAvatar;
+      document.getElementById('crop-editor').style.display = 'none';
+
+      document.getElementById('profile-name')
+        .textContent = `@${user.username}`;
+
+      document.getElementById('profile-status')
+        .textContent =
+          onlineUsernames.has(user.username)
+            ? 'Online now'
+            : 'Offline';
+
+      const bioText = user.bio || '';
+      const isOnline = onlineUsernames.has(user.username);
+
+      document.getElementById('profile-mode-label').textContent =
+        editable ? 'My Profile' : 'Member Profile';
+
+      document.getElementById('profile-online-summary').textContent =
+        isOnline ? 'Online now' : 'Offline';
+
+      document.getElementById('profile-joined-summary').textContent =
+        formatProfileDate(user.createdAt || user.lastSeen);
+
+      document.getElementById('profile-username-input').value =
+        user.username;
+
+      document.getElementById('profile-username-input').readOnly =
+        !editable;
+
+      document.getElementById('profile-username-field').style.display =
+        editable ? 'grid' : 'none';
+
+      document.getElementById('profile-bio')
+        .value = bioText;
+
+      document.querySelector('.profile-bio-label').textContent =
+        editable ? 'Write Bio' : 'Bio';
+
+      document.getElementById('profile-bio')
+        .placeholder =
+          editable
+            ? 'Write your bio/about me...'
+            : bioText || 'No bio available.';
+
+      document.getElementById('profile-bio')
+        .readOnly = !editable;
+
+      document.getElementById('profile-bio-emoji-tools')
+        .style.display =
+          editable ? 'flex' : 'none';
+
+      bioEmojiPicker.style.display = 'none';
+    
+      document.getElementById('profile-edit-area')
+        .style.display =
+          editable ? 'block' : 'none';
+
+    
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profile-modal')
+        .style.display = 'none';
+
+      bioEmojiPicker.style.display = 'none';
+    }
+let cropX = 0;
+let cropY = 0;
+let isDragging = false;
+let startX = 0;
+let startY = 0;
+
+document.getElementById('profile-upload')
+.addEventListener('change', function () {
+  const file = this.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  selectedProfileAvatar = null;
+
+  reader.onload = function (e) {
+    const cropEditor = document.getElementById('crop-editor');
+    const cropImage = document.getElementById('crop-image');
+
+    cropEditor.style.display = 'block';
+
+    cropImage.onload = function () {
+      cropX = 0;
+      cropY = 0;
+      cropZoom.value = 1;
+      updateCropTransform();
+    };
+
+    cropImage.src = e.target.result;
+  };
+
+  reader.readAsDataURL(file);
+});
+
+
+const cropFrame =
+    document.getElementById('crop-frame');
+
+const cropImage =
+    document.getElementById('crop-image');
+
+const cropZoom =
+    document.getElementById('crop-zoom');
+
+cropFrame.addEventListener('mousedown', e => {
+
+    isDragging = true;
+
+    startX = e.clientX - cropX;
+    startY = e.clientY - cropY;
+
+});
+
+window.addEventListener('mouseup', () => {
+
+    isDragging = false;
+
+});
+
+window.addEventListener('mousemove', e => {
+
+    if (!isDragging) return;
+
+    cropX = e.clientX - startX;
+    cropY = e.clientY - startY;
+
+    updateCropTransform();
+
+});
+
+cropZoom.addEventListener(
+    'input',
+    updateCropTransform
+);
+
+function updateCropTransform() {
+
+    const zoom =
+        cropZoom.value;
+
+    cropImage.style.transform =
+        `translate(${cropX}px, ${cropY}px) scale(${zoom})`;
+
+}
+
+function applyCrop() {
+
+    const canvas =
+        document.createElement('canvas');
+
+    canvas.width = 300;
+    canvas.height = 300;
+
+    const ctx =
+        canvas.getContext('2d');
+
+    const frameRect =
+        cropFrame.getBoundingClientRect();
+
+    const imageRect =
+        cropImage.getBoundingClientRect();
+
+    const scaleX =
+        cropImage.naturalWidth /
+        imageRect.width;
+
+    const scaleY =
+        cropImage.naturalHeight /
+        imageRect.height;
+
+    const sx =
+        (frameRect.left - imageRect.left) *
+        scaleX;
+
+    const sy =
+        (frameRect.top - imageRect.top) *
+        scaleY;
+
+    const sWidth =
+        frameRect.width *
+        scaleX;
+
+    const sHeight =
+        frameRect.height *
+        scaleY;
+
+    ctx.drawImage(
+        cropImage,
+        sx,
+        sy,
+        sWidth,
+        sHeight,
+        0,
+        0,
+        300,
+        300
+    );
+
+    const cropped =
+         canvas.toDataURL('image/jpeg', 0.65);
+
+    document.getElementById('profile-preview').src = cropped;
+    selectedProfileAvatar = cropped;
+
+   document.getElementById('current-user-name').textContent =
+  currentUser.username;
+
+document.getElementById('profile-bio-preview').textContent =
+  currentUser.bio || 'Infinity Chat User';
+
+document.getElementById('profile-bio').value =
+  currentUser.bio || 'Infinity Chat user';
+
+    document.getElementById(
+        'crop-editor'
+    ).style.display = 'none';
+}
+    async function saveProfile() {
+
+      const token =
+        localStorage.getItem('chat_token');
+
+      let avatar = selectedProfileAvatar ||
+  document.getElementById('profile-preview')
+    .src;
+
+if (avatar.length > 500000) {
+  alert('Profile picture is too large. Please zoom/crop smaller or choose another image.');
+  return;
+}
+      const bio =
+        document.getElementById('profile-bio')
+          .value;
+      const username =
+        document.getElementById('profile-username-input')
+          .value
+          .trim();
+
+      if (username.length < 3 || username.length > 15) {
+        alert('Username must be 3-15 characters long.');
+        return;
+      }
+
+      try {
+        const oldUsername = currentUser.username;
+
+        const res =
+          await fetch('/api/profile', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              username,
+              avatar,
+              bio
+            })
+          });
+
+        const data =
+          await res.json();
+
+        if (!res.ok) {
+          alert(
+            data.error ||
+            'Failed to save profile.'
+          );
+          return;
+        }
+
+        currentUser =
+          data.user;
+        const usernameChanged = oldUsername !== currentUser.username;
+
+        localStorage.setItem(
+          'chat_token',
+          data.token
+        );
+
+        document.getElementById(
+          'current-user-avatar'
+        ).src =
+          getDisplayAvatar(currentUser, 0);
+        document.getElementById('current-user-name').textContent =
+          `@${currentUser.username}`;
+
+        document.getElementById('profile-bio-preview').textContent =
+          currentUser.bio || 'Infinity Chat user';
+
+        closeProfileModal();
+
+        await fetchUsersAndGroups();
+
+        if (usernameChanged) {
+          activeRoomId = 'lounge';
+          unreadCounts = {};
+
+          if (socket && socket.readyState !== WebSocket.CLOSED) {
+            socket.close();
+          }
+
+          connectWebSocket();
+          switchRoom('lounge', 'Global');
+        }
+      }
+
+     catch (err) {
+  console.error('PROFILE SAVE ERROR:', err);
+  alert('Unable to update profile. Check browser console for details.');
+}
+    }
+
+    async function logout() {
+      const token = localStorage.getItem('chat_token');
+
+      try {
+        if (token) {
+          await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('Logout request failed:', err);
+      } finally {
+        clearClientSession();
+
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          socket.close();
+        }
+
+        location.reload();
+      }
+    }
+
+  </script>
+</body>
+</html>
