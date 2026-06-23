@@ -1524,7 +1524,9 @@ selectedAvatarUrl = createTechAvatarUrl(pinkAvatarSeeds[0], 0);
 
     function connectWebSocket() {
       const token = localStorage.getItem('chat_token');
-      socket = new WebSocket(`ws://${location.host}?token=${token}`);
+      const socketProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const socketUrl = `${socketProtocol}//${window.location.host}?token=${encodeURIComponent(token || '')}`;
+      socket = new WebSocket(socketUrl);
 
       socket.onopen = () => {
         document.getElementById('ws-status-dot').classList.add('online');
